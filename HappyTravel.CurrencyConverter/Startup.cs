@@ -4,6 +4,7 @@ using CacheFlow.Json.Extensions;
 using FloxDc.CacheFlow;
 using FloxDc.CacheFlow.Extensions;
 using HappyTravel.CurrencyConverter.Conventions.Serialization;
+using HappyTravel.CurrencyConverter.Data;
 using HappyTravel.CurrencyConverter.Infrastructure;
 using HappyTravel.CurrencyConverter.Infrastructure.Constants;
 using HappyTravel.CurrencyConverter.Infrastructure.Environments;
@@ -12,6 +13,7 @@ using HappyTravel.VaultClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -39,13 +41,6 @@ namespace HappyTravel.CurrencyConverter
             };
             JsonConvert.DefaultSettings = () => serializationSettings;
 
-            services.AddApiVersioning(options =>
-            {
-                options.AssumeDefaultVersionWhenUnspecified = false;
-                options.DefaultApiVersion = new ApiVersion(1, 0);
-                options.ReportApiVersions = true;
-            });
-
             var vaultOptions = new VaultOptions
             {
                 BaseUrl = new Uri(EnvironmentVariableHelper.Get("Vault:Endpoint", Configuration)),
@@ -55,8 +50,21 @@ namespace HappyTravel.CurrencyConverter
             using var vaultClient = new VaultClient.VaultClient(vaultOptions, new NullLoggerFactory());
             vaultClient.Login(EnvironmentVariableHelper.Get("Vault:Token", Configuration)).Wait();
 
-            var currencyLayerOptions = vaultClient.Get(Configuration["CurrencyLayer:Options"]).Result;
+            var databaseOptions = vaultClient.Get(Configuration["Database:Options"]).Result;
+            services.AddEntityFrameworkNpgsql().AddDbContextPool<CurrencyConverterContext>(options =>
+            {
+                var host = databaseOptions["host"];
+                var port = databaseOptions["port"];
+                var password = databaseOptions["password"];
+                var userId = databaseOptions["userId"];
 
+                var connectionString = Configuration.GetConnectionString("Tsutsujigasaki");
+                options.UseNpgsql(string.Format(connectionString, host, port, userId, password), builder => { builder.EnableRetryOnFailure(); });
+                options.EnableSensitiveDataLogging(false);
+                options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+            }, 16);
+
+            var currencyLayerOptions = vaultClient.Get(Configuration["CurrencyLayer:Options"]).Result;
             services.Configure<CurrencyLayerOptions>(options => { options.ApiKey = currencyLayerOptions["apiKey"]; });
             services.Configure<FlowOptions>(options =>
             {
@@ -71,6 +79,13 @@ namespace HappyTravel.CurrencyConverter
 
             services.AddTransient<IRateService, RateService>();
             services.AddTransient<IConversionService, ConversionService>();
+
+            services.AddApiVersioning(options =>
+            {
+                options.AssumeDefaultVersionWhenUnspecified = false;
+                options.DefaultApiVersion = new ApiVersion(1, 0);
+                options.ReportApiVersions = true;
+            });
 
             services.AddHealthChecks();
             services.AddMemoryCache()
