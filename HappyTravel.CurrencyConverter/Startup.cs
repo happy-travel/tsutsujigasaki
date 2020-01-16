@@ -8,11 +8,13 @@ using HappyTravel.CurrencyConverter.Infrastructure;
 using HappyTravel.CurrencyConverter.Infrastructure.Constants;
 using HappyTravel.CurrencyConverter.Infrastructure.Environments;
 using HappyTravel.CurrencyConverter.Services;
+using HappyTravel.VaultClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
 using Polly;
 using Polly.Extensions.Http;
@@ -44,7 +46,18 @@ namespace HappyTravel.CurrencyConverter
                 options.ReportApiVersions = true;
             });
 
-            services.Configure<CurrencyLayerOptions>(options => { options.ApiKey = ""; });
+            var vaultOptions = new VaultOptions
+            {
+                BaseUrl = new Uri(EnvironmentVariableHelper.Get("Vault:Endpoint", Configuration)),
+                Engine = Configuration["Vault:Engine"],
+                Role = Configuration["Vault:Role"]
+            };
+            using var vaultClient = new VaultClient.VaultClient(vaultOptions, new NullLoggerFactory());
+            vaultClient.Login(EnvironmentVariableHelper.Get("Vault:Token", Configuration)).Wait();
+
+            var currencyLayerOptions = vaultClient.Get(Configuration["CurrencyLayer:Options"]).Result;
+
+            services.Configure<CurrencyLayerOptions>(options => { options.ApiKey = currencyLayerOptions["apiKey"]; });
             services.Configure<FlowOptions>(options =>
             {
                 options.DistributedToMemoryExpirationRatio = 1.0;
@@ -52,15 +65,13 @@ namespace HappyTravel.CurrencyConverter
                 options.SuppressCacheExceptions = false;
             });
 
-            services.AddHttpClient(HttpClientNames.CurrencyLayer, client =>
-                {
-                    client.BaseAddress = new Uri("http://apilayer.net/api/");
-                }).SetHandlerLifetime(TimeSpan.FromMinutes(5))
+            services.AddHttpClient(HttpClientNames.CurrencyLayer, client => { client.BaseAddress = new Uri("http://apilayer.net/api/"); })
+                .SetHandlerLifetime(TimeSpan.FromMinutes(5))
                 .AddPolicyHandler(GetDefaultRetryPolicy());
 
             services.AddTransient<IRateService, RateService>();
             services.AddTransient<IConversionService, ConversionService>();
-            
+
             services.AddHealthChecks();
             services.AddMemoryCache()
                 .AddStackExchangeRedisCache(options => { options.Configuration = GetRedisConfiguration(); })
