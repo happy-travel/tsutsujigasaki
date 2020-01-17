@@ -7,7 +7,7 @@ namespace HappyTravel.CurrencyConverter.Services
 {
     public interface IConversionService
     {
-        public ValueTask<Result<decimal, ProblemDetails>> Convert(string fromCurrency, string toCurrency, decimal value);
-        public ValueTask<Result<Dictionary<decimal, decimal>, ProblemDetails>> Convert(string fromCurrency, string toCurrency, List<decimal> values);
+        public ValueTask<Result<decimal, ProblemDetails>> Convert(string sourceCurrency, string targetCurrency, decimal value);
+        public ValueTask<Result<Dictionary<decimal, decimal>, ProblemDetails>> Convert(string sourceCurrency, string targetCurrency, List<decimal> values);
     }
 }

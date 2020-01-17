@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using FloxDc.CacheFlow;
 using FloxDc.CacheFlow.Extensions;
+using HappyTravel.CurrencyConverter.Data;
 using HappyTravel.CurrencyConverter.Infrastructure;
 using HappyTravel.CurrencyConverter.Infrastructure.Constants;
 using HappyTravel.CurrencyConverter.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using static HappyTravel.CurrencyConverter.Infrastructure.Constants.Constants;
@@ -19,57 +21,46 @@ namespace HappyTravel.CurrencyConverter.Services
 {
     public class RateService : IRateService
     {
-        public RateService(IDistributedFlow cache, IHttpClientFactory clientFactory, IOptions<CurrencyLayerOptions> options)
+        public RateService(IDistributedFlow cache, IHttpClientFactory clientFactory, IOptions<CurrencyLayerOptions> options, CurrencyConverterContext context)
         {
             _cache = cache;
             _clientFactory = clientFactory;
+            _context = context;
             _options = options.Value;
         }
 
 
-        public async Task<Result<decimal, ProblemDetails>> Get(string fromCurrency, string toCurrency)
-            => (await GetRates(fromCurrency))
-                .Bind(rates => GetRate(rates, fromCurrency, toCurrency));
+        public Task<Result<decimal, ProblemDetails>> Get(string sourceCurrency, string targetCurrency)
+            => _cache.GetOrSetAsync(_cache.BuildKey(nameof(RateService), nameof(Get), sourceCurrency, targetCurrency), async () =>
+                await GetRates(sourceCurrency)
+                    .Bind(SplitCurrencyPair)
+                    .Tap(async rates => await SetRates(rates))
+                    .Bind(rates => GetRate(rates, sourceCurrency, targetCurrency)), 
+                GetTimeSpanToNextHour());
 
 
-        private Result<decimal, ProblemDetails> GetRate(Dictionary<string, decimal> quotes, string fromCurrency, string toCurrency)
+        private async Task<Result<decimal, ProblemDetails>> GetRate(Dictionary<(string, string), decimal> rates, string sourceCurrency, string targetCurrency)
         {
-            if (quotes is null || !quotes.Any())
-                return ProblemDetailsBuilder.Fail<decimal>(string.Format(ErrorMessages.ArgumentNullOrEmptyError, nameof(quotes)));
+            if (rates.TryGetValue((sourceCurrency, targetCurrency), out var rate))
+                return Result.Ok<decimal, ProblemDetails>(rate);
 
-            var currencyPair = $"{fromCurrency}{toCurrency}".ToUpperInvariant();
-            if (quotes.TryGetValue(currencyPair, out var quote))
-                return Result.Ok<decimal, ProblemDetails>(quote);
+            var storedRate = await _context.CurrencyRates
+                .Where(r => r.Source == sourceCurrency)
+                .Where(r => r.Target == targetCurrency)
+                .OrderBy(r => r.ValidFrom)
+                .Select(r => r.Rate)
+                .FirstOrDefaultAsync();
 
-            return ProblemDetailsBuilder.Fail<decimal>(string.Format(ErrorMessages.NoQuoteFound, currencyPair));
+            if (!storedRate.Equals(default))
+                return Result.Ok<decimal, ProblemDetails>(storedRate);
+
+            return ProblemDetailsBuilder.Fail<decimal>(string.Format(ErrorMessages.NoQuoteFound, sourceCurrency + targetCurrency));
         }
 
 
-        private Task<Result<Dictionary<string, decimal>, ProblemDetails>> GetRates(string fromCurrency)
-            => _cache.GetOrSetAsync(_cache.BuildKey(nameof(RateService), nameof(GetRates), fromCurrency),
-                async () => await RequestRates(fromCurrency), GetTimeSpanToNextHour());
-
-
-        private static string GetSupportedCurrenciesString(string fromCurrency)
+        private async Task<Result<Dictionary<string, decimal>, ProblemDetails>> GetRates(string sourceCurrency)
         {
-            var currenciesToConvert = SupportedCurrencies
-                .Where(c => c.Key != fromCurrency)
-                .Select(c => c.Key);
-
-            return string.Join(',', currenciesToConvert);
-        }
-
-
-        private static TimeSpan GetTimeSpanToNextHour()
-        {
-            var now = DateTime.Now;
-            return new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0).TimeOfDay;
-        }
-
-
-        private async Task<Result<Dictionary<string, decimal>, ProblemDetails>> RequestRates(string fromCurrency)
-        {
-            var url = $"live?access_key={_options.ApiKey}&source={fromCurrency}&currencies={GetSupportedCurrenciesString(fromCurrency)}";
+            var url = $"live?access_key={_options.ApiKey}&source={sourceCurrency}&currencies={GetSupportedCurrenciesString(sourceCurrency)}";
             try
             {
                 using var client = _clientFactory.CreateClient(HttpClientNames.CurrencyLayer);
@@ -95,8 +86,68 @@ namespace HappyTravel.CurrencyConverter.Services
             }
         }
 
+
+        private static string GetSupportedCurrenciesString(string sourceCurrency)
+        {
+            var currenciesToConvert = SupportedCurrencies
+                .Where(c => c.Key != sourceCurrency)
+                .Select(c => c.Key);
+
+            return string.Join(',', currenciesToConvert);
+        }
+
+
+        private static TimeSpan GetTimeSpanToNextHour()
+        {
+            var now = DateTime.Now;
+            return new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0).TimeOfDay;
+        }
+
+
+        private async Task<Result<Dictionary<(string, string), decimal>, ProblemDetails>> SetRates(Dictionary<(string, string), decimal> rates)
+        {
+            var now = DateTime.UtcNow;
+
+            var ratesToStore = new List<CurrencyRate>(rates.Count);
+            foreach (var ((source, target), rate) in rates)
+                ratesToStore.Add(new CurrencyRate
+                {
+                    Rate = rate,
+                    Source = source,
+                    Target = target,
+                    ValidFrom = now
+                });
+
+            _context.CurrencyRates!.AddRange(ratesToStore);
+            await _context.SaveChangesAsync();
+
+            return Result.Ok<Dictionary<(string, string), decimal>, ProblemDetails>(rates);
+        }
+
+
+        private Result<Dictionary<(string, string), decimal>, ProblemDetails> SplitCurrencyPair(Dictionary<string, decimal> rates)
+        {
+            if (rates is null || !rates.Any())
+                return ProblemDetailsBuilder.Fail<Dictionary<(string, string), decimal>>(string.Format(ErrorMessages.ArgumentNullOrEmptyError, nameof(rates)));
+
+            var results = new Dictionary<(string, string), decimal>(rates.Count);
+            foreach (var (token, value) in rates)
+            {
+                var source = token.Substring(0, SymbolLength);
+                var target = token.Substring(3, SymbolLength);
+
+                results.Add((source, target), value);
+            }
+
+            return Result.Ok<Dictionary<(string, string), decimal>, ProblemDetails>(results);
+        }
+
+
+        private const int SymbolLength = 3;
+
         private readonly IDistributedFlow _cache;
         private readonly IHttpClientFactory _clientFactory;
+        private readonly CurrencyConverterContext _context;
         private readonly CurrencyLayerOptions _options;
     }
 }
