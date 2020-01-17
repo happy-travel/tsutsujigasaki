@@ -6,6 +6,6 @@ namespace HappyTravel.CurrencyConverter.Services
 {
     public interface IRateService
     {
-        public Task<Result<decimal, ProblemDetails>> Get(string fromCurrency, string toCurrency);
+        public Task<Result<decimal, ProblemDetails>> Get(string sourceCurrency, string targetCurrency);
     }
 }

@@ -17,31 +17,31 @@ namespace HappyTravel.CurrencyConverter.Services
         }
 
 
-        public async ValueTask<Result<decimal, ProblemDetails>> Convert(string fromCurrency, string toCurrency, decimal value)
+        public async ValueTask<Result<decimal, ProblemDetails>> Convert(string sourceCurrency, string targetCurrency, decimal value)
         {
-            var (_, isFailure, results, error) = await Convert(fromCurrency, toCurrency, new List<decimal>(1) {value});
+            var (_, isFailure, results, error) = await Convert(sourceCurrency, targetCurrency, new List<decimal>(1) {value});
             if (isFailure)
                 return Result.Failure<decimal, ProblemDetails>(error);
 
             return results.TryGetValue(value, out var result)
                 ? Result.Ok<decimal, ProblemDetails>(result)
-                : ProblemDetailsBuilder.Fail<decimal>(string.Format(ErrorMessages.NoQuoteFound, $"{fromCurrency}{toCurrency}"));
+                : ProblemDetailsBuilder.Fail<decimal>(string.Format(ErrorMessages.NoQuoteFound, $"{sourceCurrency}{targetCurrency}"));
         }
 
 
-        public async ValueTask<Result<Dictionary<decimal, decimal>, ProblemDetails>> Convert(string fromCurrency, string toCurrency, List<decimal> values)
+        public async ValueTask<Result<Dictionary<decimal, decimal>, ProblemDetails>> Convert(string sourceCurrency, string targetCurrency, List<decimal> values)
         {
-            if (fromCurrency.Equals(toCurrency, StringComparison.InvariantCultureIgnoreCase))
+            if (sourceCurrency.Equals(targetCurrency, StringComparison.InvariantCultureIgnoreCase))
                 return Result.Ok<Dictionary<decimal, decimal>, ProblemDetails>(new Dictionary<decimal, decimal> {{values[0], values[0]}});
 
-            var (_, isFailure, rate, error) = await _rateService.Get(fromCurrency, toCurrency);
+            var (_, isFailure, rate, error) = await _rateService.Get(sourceCurrency, targetCurrency);
             if (isFailure)
                 return Result.Failure<Dictionary<decimal, decimal>, ProblemDetails>(error);
 
             var results = new Dictionary<decimal, decimal>(values.Count);
             foreach (var value in values)
             {
-                var ceiled = Ceil(value * rate, toCurrency);
+                var ceiled = Ceil(value * rate, targetCurrency);
                 var isSane = IsSane(ceiled);
                 if (isSane)
                     results.TryAdd(value, ceiled);

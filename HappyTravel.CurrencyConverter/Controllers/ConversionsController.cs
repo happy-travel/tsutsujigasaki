@@ -24,19 +24,19 @@ namespace HappyTravel.CurrencyConverter.Controllers
 
         [ProducesResponseType(typeof(Dictionary<decimal, decimal>), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
-        [HttpGet("{fromCurrency}/{toCurrency}")]
-        public async Task<IActionResult> Convert([FromRoute] string fromCurrency, [FromRoute] string toCurrency, [FromQuery] IEnumerable<decimal> values)
+        [HttpGet("{sourceCurrency}/{targetCurrency}")]
+        public async Task<IActionResult> Convert([FromRoute] string sourceCurrency, [FromRoute] string targetCurrency, [FromQuery] IEnumerable<decimal> values)
         {
-            if (string.IsNullOrWhiteSpace(fromCurrency))
-                return BadRequest(ProblemDetailsBuilder.Fail<decimal>(string.Format(ErrorMessages.ArgumentNullOrEmptyError, nameof(fromCurrency))));
+            if (string.IsNullOrWhiteSpace(sourceCurrency))
+                return BadRequest(ProblemDetailsBuilder.Fail<decimal>(string.Format(ErrorMessages.ArgumentNullOrEmptyError, nameof(sourceCurrency))));
 
-            if (string.IsNullOrWhiteSpace(toCurrency))
-                return BadRequest(ProblemDetailsBuilder.Fail<decimal>(string.Format(ErrorMessages.ArgumentNullOrEmptyError, nameof(toCurrency))));
+            if (string.IsNullOrWhiteSpace(targetCurrency))
+                return BadRequest(ProblemDetailsBuilder.Fail<decimal>(string.Format(ErrorMessages.ArgumentNullOrEmptyError, nameof(targetCurrency))));
 
             if (values is null || !values.Any())
                 return BadRequest(ProblemDetailsBuilder.Fail<decimal>(string.Format(ErrorMessages.ArgumentNullOrEmptyError, nameof(values))));
 
-            var (_, isFailure, result, error) = await _service.Convert(fromCurrency, toCurrency, values.ToList());
+            var (_, isFailure, result, error) = await _service.Convert(sourceCurrency, targetCurrency, values.ToList());
             if (isFailure)
                 return BadRequest(error);
 
@@ -46,16 +46,16 @@ namespace HappyTravel.CurrencyConverter.Controllers
 
         [ProducesResponseType(typeof(decimal), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
-        [HttpGet("{fromCurrency}/{toCurrency}/{value}")]
-        public async Task<IActionResult> Convert([FromRoute] string fromCurrency, [FromRoute] string toCurrency, [FromRoute] decimal value)
+        [HttpGet("{sourceCurrency}/{targetCurrency}/{value}")]
+        public async Task<IActionResult> Convert([FromRoute] string sourceCurrency, [FromRoute] string targetCurrency, [FromRoute] decimal value)
         {
-            if (string.IsNullOrWhiteSpace(fromCurrency))
-                return BadRequest(ProblemDetailsBuilder.Fail<decimal>(string.Format(ErrorMessages.ArgumentNullOrEmptyError, nameof(fromCurrency))));
+            if (string.IsNullOrWhiteSpace(sourceCurrency))
+                return BadRequest(ProblemDetailsBuilder.Fail<decimal>(string.Format(ErrorMessages.ArgumentNullOrEmptyError, nameof(sourceCurrency))));
 
-            if (string.IsNullOrWhiteSpace(toCurrency))
-                return BadRequest(ProblemDetailsBuilder.Fail<decimal>(string.Format(ErrorMessages.ArgumentNullOrEmptyError, nameof(toCurrency))));
+            if (string.IsNullOrWhiteSpace(targetCurrency))
+                return BadRequest(ProblemDetailsBuilder.Fail<decimal>(string.Format(ErrorMessages.ArgumentNullOrEmptyError, nameof(targetCurrency))));
 
-            var (_, isFailure, result, error) = await _service.Convert(fromCurrency, toCurrency, value);
+            var (_, isFailure, result, error) = await _service.Convert(sourceCurrency, targetCurrency, value);
             if (isFailure)
                 return BadRequest(error);
 
