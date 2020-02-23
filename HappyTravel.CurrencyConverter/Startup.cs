@@ -41,28 +41,10 @@ namespace HappyTravel.CurrencyConverter
             };
             JsonConvert.DefaultSettings = () => serializationSettings;
 
-            var vaultOptions = new VaultOptions
-            {
-                BaseUrl = new Uri(EnvironmentVariableHelper.Get("Vault:Endpoint", Configuration)),
-                Engine = Configuration["Vault:Engine"],
-                Role = Configuration["Vault:Role"]
-            };
-            using var vaultClient = new VaultClient.VaultClient(vaultOptions, new NullLoggerFactory());
+            using var vaultClient = GetVaultClient();
             vaultClient.Login(EnvironmentVariableHelper.Get("Vault:Token", Configuration)).Wait();
 
-            var databaseOptions = vaultClient.Get(Configuration["Database:Options"]).Result;
-            services.AddEntityFrameworkNpgsql().AddDbContextPool<CurrencyConverterContext>(options =>
-            {
-                var host = databaseOptions["host"];
-                var port = databaseOptions["port"];
-                var password = databaseOptions["password"];
-                var userId = databaseOptions["userId"];
-
-                var connectionString = Configuration.GetConnectionString("Tsutsujigasaki");
-                options.UseNpgsql(string.Format(connectionString, host, port, userId, password), builder => { builder.EnableRetryOnFailure(); });
-                options.EnableSensitiveDataLogging(false);
-                options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-            }, 16);
+            AddDatabase(services, vaultClient);
 
             var currencyLayerOptions = vaultClient.Get(Configuration["CurrencyLayer:Options"]).Result;
             services.Configure<CurrencyLayerOptions>(options => { options.ApiKey = currencyLayerOptions["apiKey"]; });
@@ -90,9 +72,40 @@ namespace HappyTravel.CurrencyConverter
             services.AddHealthChecks();
             services.AddMemoryCache()
                 .AddStackExchangeRedisCache(options => { options.Configuration = GetRedisConfiguration(); })
-                .AddDistributedFlow()
+                .AddDoubleFlow()
                 .AddCashFlowJsonSerialization()
                 .AddControllers();
+        }
+
+
+        private void AddDatabase(IServiceCollection services, IVaultClient vaultClient)
+        {
+            var databaseOptions = vaultClient.Get(Configuration["Database:Options"]).Result;
+            services.AddDbContextPool<CurrencyConverterContext>(options =>
+            {
+                var host = databaseOptions["host"];
+                var port = databaseOptions["port"];
+                var password = databaseOptions["password"];
+                var userId = databaseOptions["userId"];
+
+                var connectionString = Configuration.GetConnectionString("Tsutsujigasaki");
+                options.UseNpgsql(string.Format(connectionString, host, port, userId, password), builder => { builder.EnableRetryOnFailure(); });
+                options.EnableSensitiveDataLogging(false);
+                options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+            }, 16);
+        }
+
+
+        private VaultClient.VaultClient GetVaultClient()
+        {
+            var vaultOptions = new VaultOptions
+            {
+                BaseUrl = new Uri(EnvironmentVariableHelper.Get("Vault:Endpoint", Configuration)),
+                Engine = Configuration["Vault:Engine"],
+                Role = Configuration["Vault:Role"]
+            };
+
+            return new VaultClient.VaultClient(vaultOptions, new NullLoggerFactory());
         }
 
 

@@ -13,15 +13,19 @@ namespace HappyTravel.CurrencyConverter.Data
             builder.Entity<CurrencyRate>(rate =>
             {
                 rate.HasKey(r => new {SourceCurrency = r.Source, TargetCurrency = r.Target, r.ValidFrom});
-                rate.Property(r => r.Rate).IsRequired();
+                rate.Property(r => r.Rate)
+                    .HasColumnType("numeric")
+                    .IsRequired();
                 rate.Property(r => r.Source).IsRequired();
                 rate.Property(r => r.Target).IsRequired();
-                rate.Property(r => r.ValidFrom).IsRequired();
+                rate.Property(r => r.ValidFrom)
+                    .HasColumnType("timestamp")
+                    .IsRequired();
             });
         }
 
 
-        public virtual DbSet<CurrencyRate>? CurrencyRates { get; set; }
+        public virtual DbSet<CurrencyRate> CurrencyRates { get; set; } = null!;
     }
     #nullable restore
 }
