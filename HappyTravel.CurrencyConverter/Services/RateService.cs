@@ -21,7 +21,7 @@ namespace HappyTravel.CurrencyConverter.Services
 {
     public class RateService : IRateService
     {
-        public RateService(IDistributedFlow cache, IHttpClientFactory clientFactory, IOptions<CurrencyLayerOptions> options, CurrencyConverterContext context)
+        public RateService(IDoubleFlow cache, IHttpClientFactory clientFactory, IOptions<CurrencyLayerOptions> options, CurrencyConverterContext context)
         {
             _cache = cache;
             _clientFactory = clientFactory;
@@ -32,10 +32,10 @@ namespace HappyTravel.CurrencyConverter.Services
 
         public Task<Result<decimal, ProblemDetails>> Get(string sourceCurrency, string targetCurrency)
             => _cache.GetOrSetAsync(_cache.BuildKey(nameof(RateService), nameof(Get), sourceCurrency, targetCurrency), async () =>
-                await GetRates(sourceCurrency)
-                    .Bind(SplitCurrencyPair)
-                    .Tap(async rates => await SetRates(rates))
-                    .Bind(rates => GetRate(rates, sourceCurrency, targetCurrency)), 
+                    await GetRates(sourceCurrency)
+                        .Bind(SplitCurrencyPair)
+                        .Bind(SetRates)
+                        .Bind(rates => GetRate(rates, sourceCurrency, targetCurrency)),
                 GetTimeSpanToNextHour());
 
 
@@ -100,7 +100,9 @@ namespace HappyTravel.CurrencyConverter.Services
         private static TimeSpan GetTimeSpanToNextHour()
         {
             var now = DateTime.Now;
-            return new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0).TimeOfDay;
+            var nextHour = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0).AddHours(1);
+
+            return nextHour - now;
         }
 
 
@@ -118,7 +120,7 @@ namespace HappyTravel.CurrencyConverter.Services
                     ValidFrom = now
                 });
 
-            _context.CurrencyRates!.AddRange(ratesToStore);
+            _context.CurrencyRates.AddRange(ratesToStore);
             await _context.SaveChangesAsync();
 
             return Result.Ok<Dictionary<(string, string), decimal>, ProblemDetails>(rates);
@@ -145,7 +147,7 @@ namespace HappyTravel.CurrencyConverter.Services
 
         private const int SymbolLength = 3;
 
-        private readonly IDistributedFlow _cache;
+        private readonly IDoubleFlow _cache;
         private readonly IHttpClientFactory _clientFactory;
         private readonly CurrencyConverterContext _context;
         private readonly CurrencyLayerOptions _options;
