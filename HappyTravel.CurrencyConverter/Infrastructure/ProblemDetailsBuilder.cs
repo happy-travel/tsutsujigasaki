@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Net;
 using CSharpFunctionalExtensions;
 using HappyTravel.CurrencyConverter.Infrastructure.Constants;
 using HappyTravel.CurrencyConverter.Infrastructure.Logging;
@@ -14,7 +15,7 @@ namespace HappyTravel.CurrencyConverter.Infrastructure
             var message = string.Format(ErrorMessages.ArgumentNullOrEmpty, variableName, (int) LoggerEvents.ArgumentNullOrEmptyError);
             logger.LogArgumentNullOrEmptyError(message);
 
-            return Fail<T>(message);
+            return Fail<T>("Argument Null Or Empty", message, HttpStatusCode.BadRequest, new Dictionary<string, object>{{nameof(variableName), variableName}});
         }
 
 
@@ -23,7 +24,7 @@ namespace HappyTravel.CurrencyConverter.Infrastructure
             var message = string.Format(ErrorMessages.NetworkError, (int) LoggerEvents.NetworkException);
             logger.LogNetworkException(reasonPhrase);
 
-            return Fail<T>(message, statusCode);
+            return Fail<T>("Network Exception", message, statusCode, new Dictionary<string, object>{{nameof(reasonPhrase), reasonPhrase}});
         }
 
 
@@ -32,19 +33,30 @@ namespace HappyTravel.CurrencyConverter.Infrastructure
             var message = string.Format(ErrorMessages.NoQuoteFound, pair, (int) LoggerEvents.NoQuoteFoundError);
             logger.LogNoQuoteFoundError(message);
 
-            return Fail<T>(message);
+            return Fail<T>("No Quote Found", message, HttpStatusCode.BadRequest, new Dictionary<string, object>{{nameof(pair), pair}});
         }
 
 
-        internal static ProblemDetails Build(string details, HttpStatusCode statusCode = HttpStatusCode.BadRequest) 
-            => new ProblemDetails
+        internal static ProblemDetails Build(string title, string details, HttpStatusCode statusCode = HttpStatusCode.BadRequest, Dictionary<string, object>? extensions = null)
+        {
+            var result = new ProblemDetails
             {
+                Title = title,
                 Detail = details,
                 Status = (int) statusCode
             };
 
+            if (extensions == null)
+                return result;
 
-        internal static Result<T, ProblemDetails> Fail<T>(string details, HttpStatusCode statusCode = HttpStatusCode.BadRequest)
-            => Result.Failure<T, ProblemDetails>(Build(details, statusCode));
+            foreach (var extension in extensions)
+                result.Extensions.Add(extension);
+
+            return result;
+        }
+
+
+        internal static Result<T, ProblemDetails> Fail<T>(string title, string details, HttpStatusCode statusCode = HttpStatusCode.BadRequest, Dictionary<string, object>? extensions = null)
+            => Result.Failure<T, ProblemDetails>(Build(title, details, statusCode, extensions));
     }
 }
