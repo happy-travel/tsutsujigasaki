@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace HappyTravel.CurrencyConverter.Data
 {
@@ -6,6 +7,10 @@ namespace HappyTravel.CurrencyConverter.Data
     public class CurrencyConverterContext : DbContext
     {
         public CurrencyConverterContext(DbContextOptions<CurrencyConverterContext> options) : base(options) {}
+
+
+        [Obsolete("This constructor is for testing purposes only")]
+        public CurrencyConverterContext() { }
 
 
         protected override void OnModelCreating(ModelBuilder builder)

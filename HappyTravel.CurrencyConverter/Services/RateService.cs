@@ -54,10 +54,11 @@ namespace HappyTravel.CurrencyConverter.Services
             if (rates.TryGetValue((sourceCurrency, targetCurrency), out var rate))
                 return Result.Ok<decimal, ProblemDetails>(rate);
 
+            var today = DateTime.Today;
             var storedRate = await _context.CurrencyRates
-                .Where(r => r.Source == sourceCurrency)
-                .Where(r => r.Target == targetCurrency)
-                .OrderBy(r => r.ValidFrom)
+                .Where(r => r.Source == sourceCurrency && r.Target == targetCurrency)
+                .Where(r => today <= r.ValidFrom)
+                .OrderByDescending(r => r.ValidFrom)
                 .Select(r => r.Rate)
                 .FirstOrDefaultAsync();
 
@@ -86,7 +87,7 @@ namespace HappyTravel.CurrencyConverter.Services
                 var result = serializer.Deserialize<CurrencyLayerResponse>(jsonTextReader);
                 return result.IsSuccessful 
                     ? Result.Ok<Dictionary<string, decimal>, ProblemDetails>(result.Quotes) 
-                    : ProblemDetailsBuilder.Fail<Dictionary<string, decimal>>(result.Error.Message);
+                    : ProblemDetailsBuilder.Fail<Dictionary<string, decimal>>("Rate Service Exception", result.Error.Message);
             }
             catch (Exception ex)
             {
@@ -108,7 +109,7 @@ namespace HappyTravel.CurrencyConverter.Services
 
         private static TimeSpan GetTimeSpanToNextHour()
         {
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var nextHour = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0).AddHours(1);
 
             return nextHour - now;
