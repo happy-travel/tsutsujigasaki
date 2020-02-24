@@ -18,6 +18,12 @@ namespace HappyTravel.CurrencyConverter.Controllers
         }
 
 
+        /// <summary>
+        /// Returns conversion rate for the provided currency pair.
+        /// </summary>
+        /// <param name="sourceCurrency">The source currency code</param>
+        /// <param name="targetCurrency">The target currency code</param>
+        /// <returns></returns>
         [ProducesResponseType(typeof(decimal), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [HttpGet("{sourceCurrency}/{targetCurrency}")]
