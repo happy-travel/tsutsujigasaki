@@ -41,11 +41,10 @@ namespace HappyTravel.CurrencyConverter.Services
             if (string.IsNullOrWhiteSpace(targetCurrency))
                 return ProblemDetailsBuilder.FailAndLogArgumentNullOrEmpty<decimal>(_logger, nameof(targetCurrency));
 
-            return await _cache.GetOrSetAsync(_cache.BuildKey(nameof(RateService), nameof(Get), sourceCurrency, targetCurrency), async () =>
-                    await GetRates(sourceCurrency)
-                        .Bind(SplitCurrencyPair)
-                        .Bind(SetRates)
-                        .Bind(rates => GetRate(rates, sourceCurrency, targetCurrency)),
+            return await _cache.GetOrSetAsync(_cache.BuildKey(nameof(RateService), nameof(Get), sourceCurrency, targetCurrency), async () => await GetRates(sourceCurrency)
+                    .Bind(SplitCurrencyPair)
+                    .Bind(SetRates)
+                    .Bind(rates => GetRate(rates, sourceCurrency, targetCurrency)),
                 GetTimeSpanToNextHour());
         }
 
@@ -62,10 +61,9 @@ namespace HappyTravel.CurrencyConverter.Services
                 .Select(r => r.Rate)
                 .FirstOrDefaultAsync();
 
-            if (!storedRate.Equals(default))
-                return Result.Ok<decimal, ProblemDetails>(storedRate);
-
-            return ProblemDetailsBuilder.FailAndLogNoQuoteFound<decimal>(_logger, sourceCurrency + targetCurrency);
+            return storedRate.Equals(default) 
+                ? ProblemDetailsBuilder.FailAndLogNoQuoteFound<decimal>(_logger, sourceCurrency + targetCurrency) 
+                : Result.Ok<decimal, ProblemDetails>(storedRate);
         }
 
 
@@ -86,7 +84,7 @@ namespace HappyTravel.CurrencyConverter.Services
                 var serializer = new JsonSerializer();
 
                 var result = serializer.Deserialize<CurrencyLayerResponse>(jsonTextReader);
-                return result!.IsSuccessful 
+                return result.IsSuccessful 
                     ? Result.Ok<Dictionary<string, decimal>, ProblemDetails>(result.Quotes) 
                     : ProblemDetailsBuilder.Fail<Dictionary<string, decimal>>(result.Error.Message);
             }
