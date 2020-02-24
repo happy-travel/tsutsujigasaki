@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.CurrencyConverter.Infrastructure;
-using HappyTravel.CurrencyConverter.Infrastructure.Constants;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using static HappyTravel.CurrencyConverter.Infrastructure.Constants.Constants;
 
 namespace HappyTravel.CurrencyConverter.Services
 {
     public class ConversionService : IConversionService
     {
-        public ConversionService(IRateService rateService)
+        public ConversionService(ILoggerFactory loggerFactory, IRateService rateService)
         {
+            _logger = loggerFactory.CreateLogger<ConversionService>();
             _rateService = rateService;
         }
 
@@ -23,14 +25,24 @@ namespace HappyTravel.CurrencyConverter.Services
             if (isFailure)
                 return Result.Failure<decimal, ProblemDetails>(error);
 
-            return results.TryGetValue(value, out var result)
-                ? Result.Ok<decimal, ProblemDetails>(result)
-                : ProblemDetailsBuilder.Fail<decimal>(string.Format(ErrorMessages.NoQuoteFound, $"{sourceCurrency}{targetCurrency}"));
+            if (results.TryGetValue(value, out var result))
+                return Result.Ok<decimal, ProblemDetails>(result);
+
+            return ProblemDetailsBuilder.FailAndLogNoQuoteFound<decimal>(_logger, sourceCurrency + targetCurrency);
         }
 
 
         public async ValueTask<Result<Dictionary<decimal, decimal>, ProblemDetails>> Convert(string sourceCurrency, string targetCurrency, List<decimal> values)
         {
+            if (string.IsNullOrWhiteSpace(sourceCurrency))
+                return ProblemDetailsBuilder.FailAndLogArgumentNullOrEmpty<Dictionary<decimal, decimal>>(_logger, nameof(sourceCurrency));
+
+            if (string.IsNullOrWhiteSpace(targetCurrency))
+                return ProblemDetailsBuilder.FailAndLogArgumentNullOrEmpty<Dictionary<decimal, decimal>>(_logger, nameof(targetCurrency));
+
+            if (values is null || !values.Any())
+                return ProblemDetailsBuilder.FailAndLogArgumentNullOrEmpty<Dictionary<decimal, decimal>>(_logger, nameof(values));
+
             if (sourceCurrency.Equals(targetCurrency, StringComparison.InvariantCultureIgnoreCase))
                 return Result.Ok<Dictionary<decimal, decimal>, ProblemDetails>(new Dictionary<decimal, decimal> {{values[0], values[0]}});
 
@@ -59,6 +71,7 @@ namespace HappyTravel.CurrencyConverter.Services
         }
 
 
+        private readonly ILogger<ConversionService> _logger;
         private readonly IRateService _rateService;
     }
 }
