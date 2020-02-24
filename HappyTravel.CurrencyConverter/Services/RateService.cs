@@ -10,9 +10,11 @@ using FloxDc.CacheFlow.Extensions;
 using HappyTravel.CurrencyConverter.Data;
 using HappyTravel.CurrencyConverter.Infrastructure;
 using HappyTravel.CurrencyConverter.Infrastructure.Constants;
+using HappyTravel.CurrencyConverter.Infrastructure.Logging;
 using HappyTravel.CurrencyConverter.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using static HappyTravel.CurrencyConverter.Infrastructure.Constants.Constants;
@@ -21,22 +23,31 @@ namespace HappyTravel.CurrencyConverter.Services
 {
     public class RateService : IRateService
     {
-        public RateService(IDoubleFlow cache, IHttpClientFactory clientFactory, IOptions<CurrencyLayerOptions> options, CurrencyConverterContext context)
+        public RateService(ILoggerFactory loggerFactory, IDoubleFlow cache, IHttpClientFactory clientFactory, IOptions<CurrencyLayerOptions> options, CurrencyConverterContext context)
         {
             _cache = cache;
             _clientFactory = clientFactory;
             _context = context;
+            _logger = loggerFactory.CreateLogger<RateService>();
             _options = options.Value;
         }
 
 
-        public Task<Result<decimal, ProblemDetails>> Get(string sourceCurrency, string targetCurrency)
-            => _cache.GetOrSetAsync(_cache.BuildKey(nameof(RateService), nameof(Get), sourceCurrency, targetCurrency), async () =>
+        public async ValueTask<Result<decimal, ProblemDetails>> Get(string sourceCurrency, string targetCurrency)
+        {
+            if (string.IsNullOrWhiteSpace(sourceCurrency))
+                return ProblemDetailsBuilder.FailAndLogArgumentNullOrEmpty<decimal>(_logger, nameof(sourceCurrency));
+
+            if (string.IsNullOrWhiteSpace(targetCurrency))
+                return ProblemDetailsBuilder.FailAndLogArgumentNullOrEmpty<decimal>(_logger, nameof(targetCurrency));
+
+            return await _cache.GetOrSetAsync(_cache.BuildKey(nameof(RateService), nameof(Get), sourceCurrency, targetCurrency), async () =>
                     await GetRates(sourceCurrency)
                         .Bind(SplitCurrencyPair)
                         .Bind(SetRates)
                         .Bind(rates => GetRate(rates, sourceCurrency, targetCurrency)),
                 GetTimeSpanToNextHour());
+        }
 
 
         private async Task<Result<decimal, ProblemDetails>> GetRate(Dictionary<(string, string), decimal> rates, string sourceCurrency, string targetCurrency)
@@ -54,7 +65,7 @@ namespace HappyTravel.CurrencyConverter.Services
             if (!storedRate.Equals(default))
                 return Result.Ok<decimal, ProblemDetails>(storedRate);
 
-            return ProblemDetailsBuilder.Fail<decimal>(string.Format(ErrorMessages.NoQuoteFound, sourceCurrency + targetCurrency));
+            return ProblemDetailsBuilder.FailAndLogNoQuoteFound<decimal>(_logger, sourceCurrency + targetCurrency);
         }
 
 
@@ -67,7 +78,7 @@ namespace HappyTravel.CurrencyConverter.Services
                 using var response = await client.GetAsync(url);
 
                 if (!response.IsSuccessStatusCode)
-                    return ProblemDetailsBuilder.Fail<Dictionary<string, decimal>>(ErrorMessages.NetworkError, response.StatusCode);
+                    return ProblemDetailsBuilder.FailAndLogNetworkException<Dictionary<string, decimal>>(_logger, response.StatusCode, response.ReasonPhrase);
 
                 await using var stream = await response.Content.ReadAsStreamAsync();
                 using var streamReader = new StreamReader(stream);
@@ -81,7 +92,7 @@ namespace HappyTravel.CurrencyConverter.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                _logger.LogRateServiceException(ex);
                 throw;
             }
         }
@@ -130,7 +141,7 @@ namespace HappyTravel.CurrencyConverter.Services
         private Result<Dictionary<(string, string), decimal>, ProblemDetails> SplitCurrencyPair(Dictionary<string, decimal> rates)
         {
             if (rates is null || !rates.Any())
-                return ProblemDetailsBuilder.Fail<Dictionary<(string, string), decimal>>(string.Format(ErrorMessages.ArgumentNullOrEmptyError, nameof(rates)));
+                return ProblemDetailsBuilder.FailAndLogArgumentNullOrEmpty<Dictionary<(string, string), decimal>>(_logger, nameof(rates));
 
             var results = new Dictionary<(string, string), decimal>(rates.Count);
             foreach (var (token, value) in rates)
@@ -151,5 +162,6 @@ namespace HappyTravel.CurrencyConverter.Services
         private readonly IHttpClientFactory _clientFactory;
         private readonly CurrencyConverterContext _context;
         private readonly CurrencyLayerOptions _options;
+        private readonly ILogger<RateService> _logger;
     }
 }

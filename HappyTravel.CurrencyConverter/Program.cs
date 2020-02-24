@@ -1,4 +1,5 @@
 using HappyTravel.CurrencyConverter.Infrastructure.Environments;
+using HappyTravel.StdOutLogger.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -35,7 +36,19 @@ namespace HappyTravel.CurrencyConverter
 
                             var env = context.HostingEnvironment;
                             if (env.IsLocal())
+                            {
                                 builder.AddConsole();
+                            }
+                            else
+                            {
+                                builder.AddStdOutLogger(setup =>
+                                {
+                                    setup.IncludeScopes = false;
+                                    setup.RequestIdHeader = Infrastructure.Constants.Common.RequestIdHeader;
+                                    setup.UseUtcTimestamp = true;
+                                });
+                                builder.AddSentry(c => { c.Dsn = EnvironmentVariableHelper.Get("Logging:Sentry:Endpoint", context.Configuration); });
+                            }
                         });
                 });
     }
