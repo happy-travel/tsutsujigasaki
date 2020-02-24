@@ -20,6 +20,13 @@ namespace HappyTravel.CurrencyConverter.Controllers
         }
     
 
+        /// <summary>
+        /// Converts values from one currency to another.
+        /// </summary>
+        /// <param name="sourceCurrency">The source currency code</param>
+        /// <param name="targetCurrency">The target currency code</param>
+        /// <param name="values"></param>
+        /// <returns>Pairs of original and converted values in a list</returns>
         [ProducesResponseType(typeof(Dictionary<decimal, decimal>), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [HttpGet("{sourceCurrency}/{targetCurrency}")]
@@ -33,6 +40,13 @@ namespace HappyTravel.CurrencyConverter.Controllers
         }
     
 
+        /// <summary>
+        /// Converts the value from one currency to another.
+        /// </summary>
+        /// <param name="sourceCurrency">The source currency code</param>
+        /// <param name="targetCurrency">The target currency code</param>
+        /// <param name="value"></param>
+        /// <returns>The converted value</returns>
         [ProducesResponseType(typeof(decimal), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [HttpGet("{sourceCurrency}/{targetCurrency}/{value}")]
