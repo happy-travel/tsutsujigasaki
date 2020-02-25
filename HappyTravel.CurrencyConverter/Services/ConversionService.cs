@@ -44,7 +44,7 @@ namespace HappyTravel.CurrencyConverter.Services
                 return ProblemDetailsBuilder.FailAndLogArgumentNullOrEmpty<Dictionary<decimal, decimal>>(_logger, nameof(values));
 
             if (sourceCurrency.Equals(targetCurrency, StringComparison.InvariantCultureIgnoreCase))
-                return Result.Ok<Dictionary<decimal, decimal>, ProblemDetails>(new Dictionary<decimal, decimal> {{values[0], values[0]}});
+                return Result.Ok<Dictionary<decimal, decimal>, ProblemDetails>(values.ToDictionary(v => v, v => v));
 
             var (_, isFailure, rate, error) = await _rateService.Get(sourceCurrency, targetCurrency);
             if (isFailure)
