@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Net.Http;
+using System.Reflection;
 using CacheFlow.Json.Extensions;
 using FloxDc.CacheFlow;
 using FloxDc.CacheFlow.Extensions;
@@ -17,6 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Polly;
 using Polly.Extensions.Http;
@@ -59,9 +62,6 @@ namespace HappyTravel.CurrencyConverter
                 .SetHandlerLifetime(TimeSpan.FromMinutes(5))
                 .AddPolicyHandler(GetDefaultRetryPolicy());
 
-            services.AddTransient<IRateService, RateService>();
-            services.AddTransient<IConversionService, ConversionService>();
-
             services.AddApiVersioning(options =>
             {
                 options.AssumeDefaultVersionWhenUnspecified = false;
@@ -78,7 +78,48 @@ namespace HappyTravel.CurrencyConverter
                 .AddDoubleFlow()
                 .AddCashFlowJsonSerialization()
                 .AddControllers();
+
+            services.AddTransient<IRateService, RateService>();
+            services.AddTransient<IConversionService, ConversionService>();
+
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1.0", new OpenApiInfo {Title = "HappyTravel.com Currency Converter API", Version = "v1.0" });
+
+                var apiXmlCommentsFilePath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
+                options.IncludeXmlComments(apiXmlCommentsFilePath);
+
+                foreach (var assembly in Assembly.GetExecutingAssembly().GetReferencedAssemblies())
+                {
+                    var path = Path.Combine(AppContext.BaseDirectory, $"{assembly.Name}.xml");
+                    if (File.Exists(path))
+                        options.IncludeXmlComments(path);
+                }
+            });
         }
+
+
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1.0/swagger.json", "HappyTravel.com Currency Converter API");
+                options.RoutePrefix = string.Empty;
+            });
+
+
+            app.UseHttpsRedirection();
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHealthChecks("/health");
+                endpoints.MapControllers();
+            });
+        }
+
+
+        public IConfiguration Configuration { get; }
 
 
         private void AddDatabase(IServiceCollection services, IVaultClient vaultClient)
@@ -99,34 +140,6 @@ namespace HappyTravel.CurrencyConverter
         }
 
 
-        private VaultClient.VaultClient GetVaultClient()
-        {
-            var vaultOptions = new VaultOptions
-            {
-                BaseUrl = new Uri(EnvironmentVariableHelper.Get("Vault:Endpoint", Configuration)),
-                Engine = Configuration["Vault:Engine"],
-                Role = Configuration["Vault:Role"]
-            };
-
-            return new VaultClient.VaultClient(vaultOptions, new NullLoggerFactory());
-        }
-
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.UseHttpsRedirection();
-            app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapHealthChecks("/health");
-                endpoints.MapControllers();
-            });
-        }
-
-
-        public IConfiguration Configuration { get; }
-
-
         private static IAsyncPolicy<HttpResponseMessage> GetDefaultRetryPolicy()
         {
             var jitter = new Random();
@@ -138,12 +151,20 @@ namespace HappyTravel.CurrencyConverter
         }
 
 
-        private string GetRedisConfiguration()
-        {
-            if (_environment.IsLocal())
-                return "localhost";
+        private string GetRedisConfiguration() 
+            => _environment.IsLocal() ? "localhost" : "redis-master";
 
-            return "redis-master";
+
+        private VaultClient.VaultClient GetVaultClient()
+        {
+            var vaultOptions = new VaultOptions
+            {
+                BaseUrl = new Uri(EnvironmentVariableHelper.Get("Vault:Endpoint", Configuration)),
+                Engine = Configuration["Vault:Engine"],
+                Role = Configuration["Vault:Role"]
+            };
+
+            return new VaultClient.VaultClient(vaultOptions, new NullLoggerFactory());
         }
 
 
