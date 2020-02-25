@@ -10,7 +10,7 @@ namespace HappyTravel.CurrencyConverter.Data
 
 
         [Obsolete("This constructor is for testing purposes only")]
-        public CurrencyConverterContext() { }
+        //public CurrencyConverterContext() { }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -26,6 +26,7 @@ namespace HappyTravel.CurrencyConverter.Data
                 rate.Property(r => r.ValidFrom)
                     .HasColumnType("timestamp")
                     .IsRequired();
+                rate.HasIndex(r => new {r.Source, r.Target});
             });
         }
 
