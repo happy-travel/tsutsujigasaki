@@ -9,8 +9,8 @@ namespace HappyTravel.CurrencyConverter.Data
         public CurrencyConverterContext(DbContextOptions<CurrencyConverterContext> options) : base(options) {}
 
 
-        [Obsolete("This constructor is for testing purposes only")]
-        //public CurrencyConverterContext() { }
+        [Obsolete("This constructor is for testing purposes only. Comment to crate a migration.")]
+        public CurrencyConverterContext() { }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
