@@ -35,8 +35,7 @@ namespace HappyTravel.CurrencyConverter.Migrations
 
                     b.HasKey("Source", "Target", "ValidFrom");
 
-                    b.HasIndex("Source", "Target")
-                        .HasAnnotation("Npgsql:IndexMethod", "hash");
+                    b.HasIndex("Source", "Target");
 
                     b.ToTable("CurrencyRates");
                 });
