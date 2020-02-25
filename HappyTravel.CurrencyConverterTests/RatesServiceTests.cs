@@ -67,6 +67,17 @@ namespace HappyTravel.CurrencyConverterTests
 
 
         [Fact]
+        public async Task Get_ShouldReturnOneWhenSoursAndTargetCurrenciesAreTheSame()
+        {
+            var service = new RateService(new NullLoggerFactory(), null, null, _options, null);
+            var (isSuccess, _, value, _) = await service.Get("USD", "USD");
+
+            Assert.True(isSuccess);
+            Assert.Equal(1, value);
+        }
+
+
+        [Fact]
         public async Task Get_ShouldThrowExceptionWhenCacheIsNull()
         {
             var service = new RateService(new NullLoggerFactory(), null, null, _options, null);

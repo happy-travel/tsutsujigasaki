@@ -41,6 +41,9 @@ namespace HappyTravel.CurrencyConverter.Services
             if (string.IsNullOrWhiteSpace(targetCurrency))
                 return ProblemDetailsBuilder.FailAndLogArgumentNullOrEmpty<decimal>(_logger, nameof(targetCurrency));
 
+            if (sourceCurrency.Equals(targetCurrency, StringComparison.InvariantCultureIgnoreCase))
+                return Result.Ok<decimal, ProblemDetails>(1);
+
             return await _cache.GetOrSetAsync(_cache.BuildKey(nameof(RateService), nameof(Get), sourceCurrency, targetCurrency), async () => await GetRates(sourceCurrency)
                     .Bind(SplitCurrencyPair)
                     .Bind(SetRates)
