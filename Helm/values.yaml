@@ -3,6 +3,5 @@ registry: registry.dev.happytravel.com
 service:
   name: name: tsutsujigasaki
   port: 80
-  secretName: letsencrypt-tsutsujigasaki
 container:
   port: 80

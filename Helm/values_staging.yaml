@@ -10,7 +10,8 @@ ingress:
   hosts:
     - host: cc.staging.happytravel.com
       paths: [/]
-
   tls: 
     - hosts:
         - cc.staging.happytravel.com
+service:
+  secretName: letsencrypt-tsutsujigasaki
