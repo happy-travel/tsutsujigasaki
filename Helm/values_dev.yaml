@@ -1,0 +1,16 @@
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/ingress.class: "contour"
+    contour.heptio.com/retry-on: "5xx"
+    contour.heptio.com/num-retries: "5"
+    contour.heptio.com/request-timeout: "15s"
+    contour.heptio.com/per-try-timeout: "3000"
+  hosts:
+    - host: cc.dev.happytravel.com
+      paths: [/]
+
+  tls: 
+    - hosts:
+        - cc.dev.happytravel.com
