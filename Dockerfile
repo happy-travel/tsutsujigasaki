@@ -15,6 +15,8 @@ COPY HappyTravel.CurrencyConverterTests/HappyTravel.CurrencyConverterTests.cspro
 COPY nuget.config ./
 RUN dotnet restore
 COPY . .
+WORKDIR /src/HappyTravel.CurrencyConverterTests
+RUN dotnet test
 WORKDIR /src/HappyTravel.CurrencyConverter
 RUN dotnet build -c Release -o /app
 
