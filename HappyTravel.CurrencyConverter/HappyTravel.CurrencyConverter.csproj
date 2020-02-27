@@ -19,6 +19,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20200225222646_HashIndexOnCurrencyRates.cs" />
+    <Compile Remove="Migrations\20200225222646_HashIndexOnCurrencyRates.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CSharpFunctionalExtensions" Version="2.3.0" />
     <PackageReference Include="FloxDc.CacheFlow" Version="1.6.3" />
     <PackageReference Include="FloxDc.CacheFlow.Json" Version="1.6.3" />

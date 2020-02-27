@@ -26,7 +26,6 @@ namespace HappyTravel.CurrencyConverter.Data
                 rate.Property(r => r.ValidFrom)
                     .HasColumnType("timestamp")
                     .IsRequired();
-                rate.HasIndex(r => new {r.Source, r.Target});
             });
         }
 
