@@ -19,11 +19,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Migrations\20200225222646_HashIndexOnCurrencyRates.cs" />
-    <Compile Remove="Migrations\20200225222646_HashIndexOnCurrencyRates.Designer.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="HappyTravel.StdOutLogger" Version="1.0.11" />
     <PackageReference Include="HappyTravel.VaultClient" Version="1.0.4" />
     <PackageReference Include="CSharpFunctionalExtensions" Version="2.3.0" />

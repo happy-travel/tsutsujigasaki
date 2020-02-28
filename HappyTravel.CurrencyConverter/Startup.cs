@@ -68,10 +68,7 @@ namespace HappyTravel.CurrencyConverter
                 options.DefaultApiVersion = new ApiVersion(1, 0);
                 options.ReportApiVersions = true;
             });
-
-            services.AddTransient<IRateService, RateService>();
-            services.AddTransient<IConversionService, ConversionService>();
-
+          
             services.AddHealthChecks()
                 .AddDbContextCheck<CurrencyConverterContext>()
                 .AddCheck<ControllerResolveHealthCheck>(nameof(ControllerResolveHealthCheck));
@@ -82,6 +79,9 @@ namespace HappyTravel.CurrencyConverter
                 .AddCashFlowJsonSerialization()
                 .AddControllers()
                 .AddControllersAsServices();
+
+            services.AddTransient<IRateService, RateService>();
+            services.AddTransient<IConversionService, ConversionService>();
 
             services.AddSwaggerGen(options =>
             {
@@ -114,6 +114,7 @@ namespace HappyTravel.CurrencyConverter
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHealthChecks("/health");
                 endpoints.MapControllers();
                 endpoints.MapHealthChecks("/health");
             });
