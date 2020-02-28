@@ -43,6 +43,7 @@ namespace HappyTravel.CurrencyConverter.Infrastructure
             .Where(t=> !t.IsAbstract && t.IsPublic)
             .ToArray();
 
+
         private readonly IServiceProvider _serviceProvider;
     }
 }

@@ -35,8 +35,6 @@ namespace HappyTravel.CurrencyConverter.Migrations
 
                     b.HasKey("Source", "Target", "ValidFrom");
 
-                    b.HasIndex("Source", "Target");
-
                     b.ToTable("CurrencyRates");
                 });
 #pragma warning restore 612, 618
