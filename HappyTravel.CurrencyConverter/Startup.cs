@@ -114,7 +114,6 @@ namespace HappyTravel.CurrencyConverter
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHealthChecks("/health");
                 endpoints.MapControllers();
                 endpoints.MapHealthChecks("/health");
             });
