@@ -13,7 +13,6 @@ using HappyTravel.CurrencyConverter.Infrastructure.Environments;
 using HappyTravel.CurrencyConverter.Services;
 using HappyTravel.VaultClient;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -28,9 +27,8 @@ namespace HappyTravel.CurrencyConverter
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
+        public Startup(IConfiguration configuration)
         {
-            _environment = environment;
             Configuration = configuration;
         }
 
@@ -74,7 +72,7 @@ namespace HappyTravel.CurrencyConverter
                 .AddCheck<ControllerResolveHealthCheck>(nameof(ControllerResolveHealthCheck));
 
             services.AddMemoryCache()
-                .AddStackExchangeRedisCache(options => { options.Configuration = GetRedisConfiguration(); })
+                .AddStackExchangeRedisCache(options => { options.Configuration = EnvironmentVariableHelper.Get("Redis:Endpoint", Configuration); })
                 .AddDoubleFlow()
                 .AddCashFlowJsonSerialization()
                 .AddControllers()
@@ -152,10 +150,6 @@ namespace HappyTravel.CurrencyConverter
         }
 
 
-        private string GetRedisConfiguration() 
-            => _environment.IsLocal() ? "localhost" : "redis-master";
-
-
         private VaultClient.VaultClient GetVaultClient()
         {
             var vaultOptions = new VaultOptions
@@ -167,8 +161,5 @@ namespace HappyTravel.CurrencyConverter
 
             return new VaultClient.VaultClient(vaultOptions, new NullLoggerFactory());
         }
-
-
-        private readonly IWebHostEnvironment _environment;
     }
 }
