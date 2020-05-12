@@ -59,7 +59,7 @@ steps:
     BUILD_VERSION: ${DRONE_COMMIT_SHA:0:7}
   settings:
     registry: registry.dev.happytravel.com
-    repo: registry.dev.happytravel.com/edo
+    repo: registry.dev.happytravel.com/cc
     tags:
       - ${DRONE_COMMIT_SHA:0:7}
       - ${DRONE_COMMIT_BRANCH}
