@@ -30,10 +30,9 @@ namespace HappyTravel.CurrencyConverter
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration, ILoggerFactory loggerFactory)
+        public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            _loggerFactory = loggerFactory;
         }
 
 
@@ -101,9 +100,9 @@ namespace HappyTravel.CurrencyConverter
         }
 
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
-            var logger = _loggerFactory.CreateLogger<Startup>();
+            var logger = loggerFactory.CreateLogger<Startup>();
             app.UseProblemDetailsExceptionHandler(env, logger);
 
             app.UseSwagger();
@@ -167,8 +166,5 @@ namespace HappyTravel.CurrencyConverter
 
             return new VaultClient.VaultClient(vaultOptions, new NullLoggerFactory());
         }
-
-
-        private readonly ILoggerFactory _loggerFactory;
     }
 }

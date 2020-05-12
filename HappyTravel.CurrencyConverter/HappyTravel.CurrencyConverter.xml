@@ -4,7 +4,7 @@
         <name>HappyTravel.CurrencyConverter</name>
     </assembly>
     <members>
-        <member name="M:HappyTravel.CurrencyConverter.Controllers.ConversionsController.Convert(System.String,System.String,System.Collections.Generic.IEnumerable{System.Decimal})">
+        <member name="M:HappyTravel.CurrencyConverter.Controllers.ConversionsController.Convert(HappyTravel.Money.Enums.Currencies,HappyTravel.Money.Enums.Currencies,System.Collections.Generic.IEnumerable{System.Decimal})">
             <summary>
             Converts values from one currency to another.
             </summary>
@@ -13,7 +13,7 @@
             <param name="values"></param>
             <returns>Pairs of original and converted values in a list</returns>
         </member>
-        <member name="M:HappyTravel.CurrencyConverter.Controllers.ConversionsController.Convert(System.String,System.String,System.Decimal)">
+        <member name="M:HappyTravel.CurrencyConverter.Controllers.ConversionsController.Convert(HappyTravel.Money.Enums.Currencies,HappyTravel.Money.Enums.Currencies,System.Decimal)">
             <summary>
             Converts the value from one currency to another.
             </summary>
@@ -22,7 +22,7 @@
             <param name="value"></param>
             <returns>The converted value</returns>
         </member>
-        <member name="M:HappyTravel.CurrencyConverter.Controllers.RatesController.Convert(System.String,System.String)">
+        <member name="M:HappyTravel.CurrencyConverter.Controllers.RatesController.Convert(HappyTravel.Money.Enums.Currencies,HappyTravel.Money.Enums.Currencies)">
             <summary>
             Returns conversion rate for the provided currency pair.
             </summary>

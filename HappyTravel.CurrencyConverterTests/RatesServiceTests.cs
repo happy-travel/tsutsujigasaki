@@ -11,6 +11,7 @@ using FloxDc.CacheFlow;
 using HappyTravel.CurrencyConverter.Data;
 using HappyTravel.CurrencyConverter.Infrastructure;
 using HappyTravel.CurrencyConverter.Services;
+using HappyTravel.Money.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -38,28 +39,22 @@ namespace HappyTravel.CurrencyConverterTests
         }
 
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("\r")]
-        public async Task Get_ShouldReturnErrorWhenSourceCurrencyNullOrEmpty(string sourceCurrency)
+        [Fact]
+        public async Task Get_ShouldReturnErrorWhenSourceCurrencyIsNotSpecified()
         {
             var service = new RateService(new NullLoggerFactory(), null, null, _options, null);
-            var (_, isFailure, _, error) = await service.Get(sourceCurrency, "AED");
+            var (_, isFailure, _, error) = await service.Get(Currencies.NotSpecified, Currencies.AED);
 
             Assert.True(isFailure);
             Assert.Equal(400, error.Status);
         }
 
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("\r")]
-        public async Task Get_ShouldReturnErrorWhenTargetCurrencyNullOrEmpty(string targetCurrency)
+        [Fact]
+        public async Task Get_ShouldReturnErrorWhenTargetCurrencyIsNotSpecified()
         {
             var service = new RateService(new NullLoggerFactory(), null, null, _options, null);
-            var (_, isFailure, _, error) = await service.Get("USD", targetCurrency);
+            var (_, isFailure, _, error) = await service.Get(Currencies.USD, Currencies.NotSpecified);
 
             Assert.True(isFailure);
             Assert.Equal(400, error.Status);
@@ -70,7 +65,7 @@ namespace HappyTravel.CurrencyConverterTests
         public async Task Get_ShouldReturnOneWhenSoursAndTargetCurrenciesAreTheSame()
         {
             var service = new RateService(new NullLoggerFactory(), null, null, _options, null);
-            var (isSuccess, _, value, _) = await service.Get("USD", "USD");
+            var (isSuccess, _, value, _) = await service.Get(Currencies.USD, Currencies.USD);
 
             Assert.True(isSuccess);
             Assert.Equal(1, value);
@@ -82,7 +77,7 @@ namespace HappyTravel.CurrencyConverterTests
         {
             var service = new RateService(new NullLoggerFactory(), null, null, _options, null);
 
-            await Assert.ThrowsAsync<NullReferenceException>(async () => await service.Get("USD", "AED"));
+            await Assert.ThrowsAsync<NullReferenceException>(async () => await service.Get(Currencies.USD, Currencies.AED));
         }
 
 
@@ -91,7 +86,7 @@ namespace HappyTravel.CurrencyConverterTests
         {
             var service = new RateService(new NullLoggerFactory(), GetCache(), null, _options, null);
 
-            await Assert.ThrowsAsync<NullReferenceException>(async () => await service.Get("USD", "AED"));
+            await Assert.ThrowsAsync<NullReferenceException>(async () => await service.Get(Currencies.USD, Currencies.AED));
         }
 
 
@@ -113,7 +108,7 @@ namespace HappyTravel.CurrencyConverterTests
 
             var service = new RateService(new NullLoggerFactory(), GetCache(), clientFactoryMock.Object, _options, null);
 
-            await Assert.ThrowsAsync<NetworkInformationException>(async () => await service.Get("USD", "AED"));
+            await Assert.ThrowsAsync<NetworkInformationException>(async () => await service.Get(Currencies.USD, Currencies.AED));
         }
 
 
@@ -123,7 +118,7 @@ namespace HappyTravel.CurrencyConverterTests
             const HttpStatusCode status = HttpStatusCode.BadRequest;
 
             var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(new HttpResponseMessage(status)), _options, null);
-            var (_, isFailure, _, error) = await service.Get("USD", "AED");
+            var (_, isFailure, _, error) = await service.Get(Currencies.USD, Currencies.AED);
 
             Assert.True(isFailure);
             Assert.Equal((int) status, error.Status);
@@ -141,7 +136,7 @@ namespace HappyTravel.CurrencyConverterTests
             
             var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(response), _options, null);
 
-            await Assert.ThrowsAsync<JsonReaderException>(async () => await service.Get("USD", "AED"));
+            await Assert.ThrowsAsync<JsonReaderException>(async () => await service.Get(Currencies.USD, Currencies.AED));
         }
 
 
@@ -163,7 +158,7 @@ namespace HappyTravel.CurrencyConverterTests
             };
             
             var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(response), _options, null);
-            var (_, isFailure, _, error) = await service.Get("USD", "AED");
+            var (_, isFailure, _, error) = await service.Get(Currencies.USD, Currencies.AED);
 
             Assert.True(isFailure);
             Assert.Equal(400, error.Status);
@@ -188,7 +183,7 @@ namespace HappyTravel.CurrencyConverterTests
             };
             
             var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(response), _options, null);
-            var (_, isFailure, _, error) = await service.Get("USD", "AED");
+            var (_, isFailure, _, error) = await service.Get(Currencies.USD, Currencies.AED);
 
             Assert.True(isFailure);
             Assert.Equal(400, error.Status);
@@ -200,7 +195,7 @@ namespace HappyTravel.CurrencyConverterTests
         {
             var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(), _options, null);
 
-            await Assert.ThrowsAsync<NullReferenceException>(async () => await service.Get("USD", "AED"));
+            await Assert.ThrowsAsync<NullReferenceException>(async () => await service.Get(Currencies.USD, Currencies.AED));
         }
 
 
@@ -216,7 +211,7 @@ namespace HappyTravel.CurrencyConverterTests
                 .ReturnsAsync(0);
 
             var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(), _options, contextMock.Object);
-            var (isSuccess, _, returnedValue) = await service.Get("USD", "AED");
+            var (isSuccess, _, returnedValue) = await service.Get(Currencies.USD, Currencies.AED);
 
             Assert.True(isSuccess);
             //Because of serialization reasons
@@ -236,7 +231,7 @@ namespace HappyTravel.CurrencyConverterTests
                 .ReturnsAsync(0);
 
             var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(), _options, contextMock.Object);
-            var (_, isFailure, _, error) = await service.Get("USD", "RUR");
+            var (_, isFailure, _, error) = await service.Get(Currencies.USD, Currencies.NotSpecified);
 
             Assert.True(isFailure);
             Assert.Equal(400, error.Status);
@@ -249,7 +244,7 @@ namespace HappyTravel.CurrencyConverterTests
             const decimal value = 12.3456m;
             var currencyRatesMock = new List<CurrencyRate>
             {
-                new CurrencyRate{Rate = value, Source = "USD", Target = "RUR", ValidFrom = DateTime.Now}
+                new CurrencyRate{Rate = value, Source = "USD", Target = "SAR", ValidFrom = DateTime.Now}
             }.AsQueryable().BuildMockDbSet();
             
             var contextMock = new Mock<CurrencyConverterContext>();
@@ -259,7 +254,7 @@ namespace HappyTravel.CurrencyConverterTests
                 .ReturnsAsync(0);
 
             var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(), _options, contextMock.Object);
-            var (isSuccess, _, returnedValue) = await service.Get("USD", "RUR");
+            var (isSuccess, _, returnedValue) = await service.Get(Currencies.USD, Currencies.SAR);
 
             Assert.True(isSuccess);
             Assert.Equal(value, returnedValue);
@@ -273,8 +268,8 @@ namespace HappyTravel.CurrencyConverterTests
             var time = DateTime.UtcNow;
             var currencyRatesMock = new List<CurrencyRate>
             {
-                new CurrencyRate{Rate = value, Source = "USD", Target = "RUR", ValidFrom = time},
-                new CurrencyRate{Rate = value - 10m, Source = "USD", Target = "RUR", ValidFrom = time.AddMinutes(-10)}
+                new CurrencyRate{Rate = value, Source ="USD", Target = "SAR", ValidFrom = time},
+                new CurrencyRate{Rate = value - 10m, Source = "USD", Target = "SAR", ValidFrom = time.AddMinutes(-10)}
             }.AsQueryable().BuildMockDbSet();
             
             var contextMock = new Mock<CurrencyConverterContext>();
@@ -284,7 +279,7 @@ namespace HappyTravel.CurrencyConverterTests
                 .ReturnsAsync(0);
 
             var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(), _options, contextMock.Object);
-            var (isSuccess, _, returnedValue) = await service.Get("USD", "RUR");
+            var (isSuccess, _, returnedValue) = await service.Get(Currencies.USD, Currencies.SAR);
 
             Assert.True(isSuccess);
             Assert.Equal(value, returnedValue);
@@ -298,9 +293,9 @@ namespace HappyTravel.CurrencyConverterTests
             var time = DateTime.UtcNow;
             var currencyRatesMock = new List<CurrencyRate>
             {
-                new CurrencyRate{Rate = value, Source = "USD", Target = "RUR", ValidFrom = time.AddDays(-2)},
-                new CurrencyRate{Rate = value, Source = "USD", Target = "RUR", ValidFrom = time},
-                new CurrencyRate{Rate = value - 10m, Source = "USD", Target = "RUR", ValidFrom = time.AddDays(-2).AddMinutes(-10)}
+                new CurrencyRate{Rate = value, Source = "USD", Target = "SAR", ValidFrom = time.AddDays(-2)},
+                new CurrencyRate{Rate = value, Source = "USD", Target = "SAR", ValidFrom = time},
+                new CurrencyRate{Rate = value - 10m, Source = "USD", Target = "SAR", ValidFrom = time.AddDays(-2).AddMinutes(-10)}
             }.AsQueryable().BuildMockDbSet();
             
             var contextMock = new Mock<CurrencyConverterContext>();
@@ -310,7 +305,7 @@ namespace HappyTravel.CurrencyConverterTests
                 .ReturnsAsync(0);
 
             var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(), _options, contextMock.Object);
-            var (isSuccess, _, returnedValue) = await service.Get("USD", "RUR");
+            var (isSuccess, _, returnedValue) = await service.Get(Currencies.USD, Currencies.SAR);
 
             Assert.True(isSuccess);
             Assert.Equal(value, returnedValue);

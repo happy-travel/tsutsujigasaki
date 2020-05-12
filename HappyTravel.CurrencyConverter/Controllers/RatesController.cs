@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.CurrencyConverter.Services;
+using HappyTravel.Money.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HappyTravel.CurrencyConverter.Controllers
@@ -27,7 +28,7 @@ namespace HappyTravel.CurrencyConverter.Controllers
         [ProducesResponseType(typeof(decimal), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [HttpGet("{sourceCurrency}/{targetCurrency}")]
-        public async Task<IActionResult> Convert([FromRoute] string sourceCurrency, [FromRoute] string targetCurrency)
+        public async Task<IActionResult> Convert([FromRoute] Currencies sourceCurrency, [FromRoute] Currencies targetCurrency)
         {
             var (_, isFailure, value, error) = await _rateService.Get(sourceCurrency, targetCurrency);
             if (isFailure)

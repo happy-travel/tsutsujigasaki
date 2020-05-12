@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.CurrencyConverter.Services;
+using HappyTravel.Money.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HappyTravel.CurrencyConverter.Controllers
@@ -30,7 +31,7 @@ namespace HappyTravel.CurrencyConverter.Controllers
         [ProducesResponseType(typeof(Dictionary<decimal, decimal>), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [HttpGet("{sourceCurrency}/{targetCurrency}")]
-        public async Task<IActionResult> Convert([FromRoute] string sourceCurrency, [FromRoute] string targetCurrency, [FromQuery] IEnumerable<decimal> values)
+        public async Task<IActionResult> Convert([FromRoute] Currencies sourceCurrency, [FromRoute] Currencies targetCurrency, [FromQuery] IEnumerable<decimal> values)
         {
             var (_, isFailure, result, error) = await _service.Convert(sourceCurrency, targetCurrency, values.ToList());
             if (isFailure)
@@ -50,7 +51,7 @@ namespace HappyTravel.CurrencyConverter.Controllers
         [ProducesResponseType(typeof(decimal), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [HttpGet("{sourceCurrency}/{targetCurrency}/{value}")]
-        public async Task<IActionResult> Convert([FromRoute] string sourceCurrency, [FromRoute] string targetCurrency, [FromRoute] decimal value)
+        public async Task<IActionResult> Convert([FromRoute] Currencies sourceCurrency, [FromRoute] Currencies targetCurrency, [FromRoute] decimal value)
         {
             var (_, isFailure, result, error) = await _service.Convert(sourceCurrency, targetCurrency, value);
             if (isFailure)

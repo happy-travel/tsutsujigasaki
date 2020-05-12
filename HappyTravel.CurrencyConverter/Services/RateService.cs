@@ -12,12 +12,12 @@ using HappyTravel.CurrencyConverter.Infrastructure;
 using HappyTravel.CurrencyConverter.Infrastructure.Constants;
 using HappyTravel.CurrencyConverter.Infrastructure.Logging;
 using HappyTravel.CurrencyConverter.Models;
+using HappyTravel.Money.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using static HappyTravel.CurrencyConverter.Infrastructure.Constants.Constants;
 
 namespace HappyTravel.CurrencyConverter.Services
 {
@@ -33,45 +33,46 @@ namespace HappyTravel.CurrencyConverter.Services
         }
 
 
-        public async ValueTask<Result<decimal, ProblemDetails>> Get(string sourceCurrency, string targetCurrency)
+        public async ValueTask<Result<decimal, ProblemDetails>> Get(Currencies sourceCurrency, Currencies targetCurrency)
         {
-            if (string.IsNullOrWhiteSpace(sourceCurrency))
+            if (sourceCurrency == Currencies.NotSpecified)
                 return ProblemDetailsBuilder.FailAndLogArgumentNullOrEmpty<decimal>(_logger, nameof(sourceCurrency));
 
-            if (string.IsNullOrWhiteSpace(targetCurrency))
+            if (targetCurrency == Currencies.NotSpecified)
                 return ProblemDetailsBuilder.FailAndLogArgumentNullOrEmpty<decimal>(_logger, nameof(targetCurrency));
 
-            if (sourceCurrency.Equals(targetCurrency, StringComparison.InvariantCultureIgnoreCase))
+            if (sourceCurrency == targetCurrency)
                 return Result.Ok<decimal, ProblemDetails>(1);
 
-            return await _cache.GetOrSetAsync(_cache.BuildKey(nameof(RateService), nameof(Get), sourceCurrency, targetCurrency), async () => await GetRates(sourceCurrency)
-                    .Bind(SplitCurrencyPair)
-                    .Bind(SetRates)
-                    .Bind(rates => GetRate(rates, sourceCurrency, targetCurrency)),
+            return await _cache.GetOrSetAsync(_cache.BuildKey(nameof(RateService), nameof(Get), sourceCurrency.ToString(), targetCurrency.ToString()), async ()
+                    => await GetRates(sourceCurrency)
+                        .Bind(SplitCurrencyPair)
+                        .Bind(SetRates)
+                        .Bind(rates => GetRate(rates, sourceCurrency, targetCurrency)),
                 GetTimeSpanToNextHour());
         }
 
 
-        private async Task<Result<decimal, ProblemDetails>> GetRate(Dictionary<(string, string), decimal> rates, string sourceCurrency, string targetCurrency)
+        private async Task<Result<decimal, ProblemDetails>> GetRate(Dictionary<(string, string), decimal> rates, Currencies sourceCurrency, Currencies targetCurrency)
         {
-            if (rates.TryGetValue((sourceCurrency, targetCurrency), out var rate))
+            if (rates.TryGetValue((sourceCurrency.ToString(), targetCurrency.ToString()), out var rate))
                 return Result.Ok<decimal, ProblemDetails>(rate);
 
             var today = DateTime.Today;
             var storedRate = await _context.CurrencyRates
-                .Where(r => r.Source == sourceCurrency && r.Target == targetCurrency)
+                .Where(r => r.Source == sourceCurrency.ToString() && r.Target == targetCurrency.ToString())
                 .Where(r => today <= r.ValidFrom)
                 .OrderByDescending(r => r.ValidFrom)
                 .Select(r => r.Rate)
                 .FirstOrDefaultAsync();
 
             return storedRate.Equals(default) 
-                ? ProblemDetailsBuilder.FailAndLogNoQuoteFound<decimal>(_logger, sourceCurrency + targetCurrency) 
+                ? ProblemDetailsBuilder.FailAndLogNoQuoteFound<decimal>(_logger, sourceCurrency.ToString() + targetCurrency) 
                 : Result.Ok<decimal, ProblemDetails>(storedRate);
         }
 
 
-        private async Task<Result<Dictionary<string, decimal>, ProblemDetails>> GetRates(string sourceCurrency)
+        private async Task<Result<Dictionary<string, decimal>, ProblemDetails>> GetRates(Currencies sourceCurrency)
         {
             var url = $"live?access_key={_options.ApiKey}&source={sourceCurrency}&currencies={GetSupportedCurrenciesString(sourceCurrency)}";
             try
@@ -100,11 +101,11 @@ namespace HappyTravel.CurrencyConverter.Services
         }
 
 
-        private static string GetSupportedCurrenciesString(string sourceCurrency)
+        private static string GetSupportedCurrenciesString(Currencies sourceCurrency)
         {
-            var currenciesToConvert = SupportedCurrencies
-                .Where(c => c.Key != sourceCurrency)
-                .Select(c => c.Key);
+            var sourceCurrencyName = sourceCurrency.ToString();
+            var currenciesToConvert = Enum.GetNames(typeof(Currencies))
+                .Where(currency => currency != sourceCurrencyName);
 
             return string.Join(',', currenciesToConvert);
         }
