@@ -19,9 +19,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="HappyTravel.ErrorHandling" Version="1.0.0" />
     <PackageReference Include="HappyTravel.Money" Version="0.0.2" />
-    <PackageReference Include="HappyTravel.StdOutLogger" Version="1.0.11" />
-    <PackageReference Include="HappyTravel.VaultClient" Version="1.0.4" />
+    <PackageReference Include="HappyTravel.StdOutLogger" Version="1.0.12" />
+    <PackageReference Include="HappyTravel.VaultClient" Version="1.0.5" />
     <PackageReference Include="CSharpFunctionalExtensions" Version="2.7.1" />
     <PackageReference Include="FloxDc.CacheFlow" Version="1.6.4" />
     <PackageReference Include="FloxDc.CacheFlow.Json" Version="1.6.4" />

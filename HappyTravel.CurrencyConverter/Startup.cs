@@ -11,12 +11,15 @@ using HappyTravel.CurrencyConverter.Infrastructure;
 using HappyTravel.CurrencyConverter.Infrastructure.Constants;
 using HappyTravel.CurrencyConverter.Infrastructure.Environments;
 using HappyTravel.CurrencyConverter.Services;
+using HappyTravel.ErrorHandling.Extensions;
 using HappyTravel.VaultClient;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
@@ -27,9 +30,10 @@ namespace HappyTravel.CurrencyConverter
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, ILoggerFactory loggerFactory)
         {
             Configuration = configuration;
+            _loggerFactory = loggerFactory;
         }
 
 
@@ -78,6 +82,7 @@ namespace HappyTravel.CurrencyConverter
 
             services.AddTransient<IRateService, RateService>();
             services.AddTransient<IConversionService, ConversionService>();
+            services.AddProblemDetailsFactory();
 
             services.AddSwaggerGen(options =>
             {
@@ -96,8 +101,11 @@ namespace HappyTravel.CurrencyConverter
         }
 
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            var logger = _loggerFactory.CreateLogger<Startup>();
+            app.UseProblemDetailsExceptionHandler(env, logger);
+
             app.UseSwagger();
             app.UseSwaggerUI(options =>
             {
@@ -159,5 +167,8 @@ namespace HappyTravel.CurrencyConverter
 
             return new VaultClient.VaultClient(vaultOptions, new NullLoggerFactory());
         }
+
+
+        private readonly ILoggerFactory _loggerFactory;
     }
 }
