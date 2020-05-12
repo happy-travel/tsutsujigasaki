@@ -71,3 +71,4 @@ env:
   ASPNETCORE_ENVIRONMENT: "Production"
   HTDC_VAULT_ENDPOINT: "https://vault.dev.happytravel.com/v1/"
   HTDC_TSUTSUJIGASAKI_SENTRY_ENDPOINT: "https://df89400a0d23436dbd54be0167bb021c@sentry.dev.happytravel.com/18"
+  HTDC_REDIS_HOST: "redis-tsutsujigasaki"
