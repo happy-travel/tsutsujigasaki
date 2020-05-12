@@ -51,8 +51,6 @@ namespace HappyTravel.CurrencyConverter
             services.Configure<CurrencyLayerOptions>(options => { options.ApiKey = currencyLayerOptions["apiKey"]; });
             services.Configure<FlowOptions>(options =>
             {
-                options.DistributedToMemoryExpirationRatio = 1.0;
-                options.SkipRetryInterval = TimeSpan.FromMilliseconds(200);
                 options.SuppressCacheExceptions = false;
             });
 
