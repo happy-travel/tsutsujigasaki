@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
-using CacheFlow.Json.Extensions;
+using CacheFlow.MessagePack.Extensions;
 using FloxDc.CacheFlow;
 using FloxDc.CacheFlow.Extensions;
 using HappyTravel.CurrencyConverter.Conventions.Serialization;
@@ -13,6 +13,8 @@ using HappyTravel.CurrencyConverter.Infrastructure.Environments;
 using HappyTravel.CurrencyConverter.Services;
 using HappyTravel.ErrorHandling.Extensions;
 using HappyTravel.VaultClient;
+using MessagePack;
+using MessagePack.Resolvers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -72,10 +74,13 @@ namespace HappyTravel.CurrencyConverter
                 .AddDbContextCheck<CurrencyConverterContext>()
                 .AddCheck<ControllerResolveHealthCheck>(nameof(ControllerResolveHealthCheck));
 
+            var messagePackOptions = MessagePackSerializerOptions.Standard
+                .WithCompression(MessagePackCompression.Lz4BlockArray);
+
             services.AddMemoryCache()
                 .AddStackExchangeRedisCache(options => { options.Configuration = EnvironmentVariableHelper.Get("Redis:Endpoint", Configuration); })
                 .AddDoubleFlow()
-                .AddCashFlowJsonSerialization()
+                .AddCashFlowMessagePackSerialization(messagePackOptions, NativeDecimalResolver.Instance)
                 .AddControllers()
                 .AddControllersAsServices();
 
