@@ -14,6 +14,7 @@ using HappyTravel.CurrencyConverter.Services;
 using HappyTravel.ErrorHandling.Extensions;
 using HappyTravel.VaultClient;
 using MessagePack;
+using MessagePack.CSharpFunctionalExtensions;
 using MessagePack.Resolvers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -80,7 +81,7 @@ namespace HappyTravel.CurrencyConverter
             services.AddMemoryCache()
                 .AddStackExchangeRedisCache(options => { options.Configuration = EnvironmentVariableHelper.Get("Redis:Endpoint", Configuration); })
                 .AddDoubleFlow()
-                .AddCashFlowMessagePackSerialization(messagePackOptions, NativeDecimalResolver.Instance)
+                .AddCashFlowMessagePackSerialization(messagePackOptions, NativeDecimalResolver.Instance, CSharpFunctionalExtensionsFormatResolver.Instance)
                 .AddControllers()
                 .AddControllersAsServices();
 
