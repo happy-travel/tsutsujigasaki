@@ -47,7 +47,11 @@ namespace HappyTravel.CurrencyConverter
                                     setup.RequestIdHeader = Infrastructure.Constants.Common.RequestIdHeader;
                                     setup.UseUtcTimestamp = true;
                                 });
-                                builder.AddSentry(c => { c.Dsn = EnvironmentVariableHelper.Get("Logging:Sentry:Endpoint", context.Configuration); });
+                                builder.AddSentry(c =>
+                                {
+                                    c.Dsn = EnvironmentVariableHelper.Get("Logging:Sentry:Endpoint", context.Configuration);
+                                    c.Environment = env.EnvironmentName;
+                                });
                             }
                         });
                 });
