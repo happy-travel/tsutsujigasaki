@@ -44,12 +44,19 @@ namespace HappyTravel.CurrencyConverter.Services
             if (sourceCurrency == targetCurrency)
                 return Result.Ok<decimal, ProblemDetails>(1);
 
-            return await _cache.GetOrSetAsync(_cache.BuildKey(nameof(RateService), nameof(Get), sourceCurrency.ToString(), targetCurrency.ToString()), async ()
-                    => await GetRates(sourceCurrency)
-                        .Bind(SplitCurrencyPair)
-                        .Bind(SetRates)
-                        .Bind(rates => GetRate(rates, sourceCurrency, targetCurrency)),
-                GetTimeSpanToNextHour());
+            var cacheKey = _cache.BuildKey(nameof(RateService), nameof(Get), sourceCurrency.ToString(), targetCurrency.ToString());
+            if (_cache.TryGetValue(cacheKey, out Result<decimal, ProblemDetails> result, GetTimeSpanToNextHour()))
+                return result;
+
+            result = await GetRates(sourceCurrency)
+                .Bind(SplitCurrencyPair)
+                .Bind(SetRates)
+                .Bind(rates => GetRate(rates, sourceCurrency, targetCurrency));
+
+            if (result.IsSuccess)
+                await _cache.SetAsync(cacheKey, result, GetTimeSpanToNextHour());
+            
+            return result;
         }
 
 
