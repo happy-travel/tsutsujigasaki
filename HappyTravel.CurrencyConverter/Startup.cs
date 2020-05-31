@@ -27,6 +27,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace.Configuration;
+using OpenTelemetry.Trace.Samplers;
 using Polly;
 using Polly.Extensions.Http;
 
@@ -34,8 +37,12 @@ namespace HappyTravel.CurrencyConverter
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private readonly IWebHostEnvironment _environment;
+
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
+            _environment = environment;
             Configuration = configuration;
         }
 
@@ -82,7 +89,7 @@ namespace HappyTravel.CurrencyConverter
             services.AddMemoryCache()
                 .AddStackExchangeRedisCache(options => { options.Configuration = EnvironmentVariableHelper.Get("Redis:Endpoint", Configuration); })
                 .AddDoubleFlow()
-                .AddCashFlowMessagePackSerialization(messagePackOptions, StandardResolver.Instance, NativeDecimalResolver.Instance, 
+                .AddCacheFlowMessagePackSerialization(messagePackOptions, StandardResolver.Instance, NativeDecimalResolver.Instance, 
                     CSharpFunctionalExtensionsFormatResolver.Instance, ProblemDetailsFormatResolver.Instance)
                 .AddControllers()
                 .AddControllersAsServices();
@@ -91,6 +98,8 @@ namespace HappyTravel.CurrencyConverter
             services.AddTransient<IConversionService, ConversionService>();
             services.AddProblemDetailsFactory();
 
+            services = AddTracing(services, _environment, Configuration);
+            
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1.0", new OpenApiInfo {Title = "HappyTravel.com Currency Converter API", Version = "v1.0" });
@@ -149,6 +158,41 @@ namespace HappyTravel.CurrencyConverter
                 options.EnableSensitiveDataLogging(false);
                 options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             }, 16);
+        }
+
+
+        private IServiceCollection AddTracing(IServiceCollection services, IWebHostEnvironment environment, IConfiguration configuration)
+        {
+            string agentHost;
+            int agentPort;
+            if (environment.IsLocal())
+            {
+                agentHost = configuration["Jaeger:AgentHost"];
+                agentPort = int.Parse(configuration["Jaeger:AgentPort"]);
+            }
+            else
+            {
+                agentHost = EnvironmentVariableHelper.Get("Jaeger:AgentHost", configuration);
+                agentPort = int.Parse(EnvironmentVariableHelper.Get("Jaeger:AgentPort", configuration));
+            }
+            
+            var serviceName = $"{environment.ApplicationName}-{environment.EnvironmentName}";
+            services.AddOpenTelemetry(builder =>
+            {
+                builder.UseJaeger(options =>
+                    {
+                        options.ServiceName = serviceName;
+                        options.AgentHost = agentHost;
+                        options.AgentPort = agentPort;
+                    })
+                    .AddRequestAdapter()
+                    .AddDependencyAdapter()
+                    .AddCacheFlowAdapter()
+                    .SetResource(Resources.CreateServiceResource(serviceName))
+                    .SetSampler(new AlwaysOnSampler());
+            });
+
+            return services;
         }
 
 
