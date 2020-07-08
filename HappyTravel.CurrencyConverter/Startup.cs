@@ -27,9 +27,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace.Configuration;
-using OpenTelemetry.Trace.Samplers;
+//using OpenTelemetry.Resources;
+//using OpenTelemetry.Trace.Configuration;
+//using OpenTelemetry.Trace.Samplers;
 using Polly;
 using Polly.Extensions.Http;
 
@@ -98,7 +98,7 @@ namespace HappyTravel.CurrencyConverter
             services.AddTransient<IConversionService, ConversionService>();
             services.AddProblemDetailsFactory();
 
-            services = AddTracing(services, _environment, Configuration);
+            //services = AddTracing(services, _environment, Configuration);
             
             services.AddSwaggerGen(options =>
             {
@@ -177,7 +177,7 @@ namespace HappyTravel.CurrencyConverter
             }
             
             var serviceName = $"{environment.ApplicationName}-{environment.EnvironmentName}";
-            services.AddOpenTelemetry(builder =>
+            /*services.AddOpenTelemetry(builder =>
             {
                 builder.UseJaeger(options =>
                     {
@@ -190,7 +190,7 @@ namespace HappyTravel.CurrencyConverter
                     .AddCacheFlowInstrumentation()
                     .SetResource(Resources.CreateServiceResource(serviceName))
                     .SetSampler(new AlwaysOnSampler());
-            });
+            });*/
 
             return services;
         }
