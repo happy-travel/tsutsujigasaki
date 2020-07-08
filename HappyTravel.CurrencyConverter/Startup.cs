@@ -185,9 +185,9 @@ namespace HappyTravel.CurrencyConverter
                         options.AgentHost = agentHost;
                         options.AgentPort = agentPort;
                     })
-                    .AddRequestAdapter()
-                    .AddDependencyAdapter()
-                    .AddCacheFlowAdapter()
+                    .AddRequestInstrumentation()
+                    .AddDependencyInstrumentation()
+                    .AddCacheFlowInstrumentation()
                     .SetResource(Resources.CreateServiceResource(serviceName))
                     .SetSampler(new AlwaysOnSampler());
             });
