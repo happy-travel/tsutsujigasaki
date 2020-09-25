@@ -359,7 +359,7 @@ namespace HappyTravel.CurrencyConverterTests
 
             var defaultCurrencyRatesMock = new List<DefaultCurrencyRate>
             {
-                new DefaultCurrencyRate {Rate = 3.668m, Source = Currencies.USD, Target = Currencies.AED}
+                new DefaultCurrencyRate {Rate = defaultRate, Source = Currencies.USD, Target = Currencies.AED}
             }.AsQueryable().BuildMockDbSet();
 
             var contextMock = new Mock<CurrencyConverterContext>();
