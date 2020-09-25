@@ -67,11 +67,9 @@ namespace HappyTravel.CurrencyConverter.Services
         private async Task<Result<decimal, ProblemDetails>> GetRate(Dictionary<(string, string), decimal> rates,
             Currencies sourceCurrency, Currencies targetCurrency)
         {
-            var defaultRates = await GetDefaultRates();
-            var defaultRate = defaultRates.FirstOrDefault(dr => dr.Source == sourceCurrency
-                && dr.Target == targetCurrency);
-            if (defaultRate != null)
-                return defaultRate.Rate;
+            var defaultRate = await GetDefaultRate(sourceCurrency.ToString(), targetCurrency.ToString());
+            if (defaultRate.HasValue)
+                return defaultRate.Value;
 
             if (rates.TryGetValue((sourceCurrency.ToString(), targetCurrency.ToString()), out var rate))
                 return Result.Ok<decimal, ProblemDetails>(rate);
@@ -93,8 +91,7 @@ namespace HappyTravel.CurrencyConverter.Services
 
         private async Task<Result<Dictionary<string, decimal>, ProblemDetails>> GetRates(Currencies sourceCurrency)
         {
-            var url =
-                $"live?access_key={_options.ApiKey}&source={sourceCurrency}&currencies={GetSupportedCurrenciesString(sourceCurrency)}";
+            var url = $"live?access_key={_options.ApiKey}&source={sourceCurrency}&currencies={GetSupportedCurrenciesString(sourceCurrency)}";
             try
             {
                 using var client = _clientFactory.CreateClient(HttpClientNames.CurrencyLayer);
@@ -146,19 +143,16 @@ namespace HappyTravel.CurrencyConverter.Services
             Dictionary<(string, string), decimal> rates)
         {
             var now = DateTime.UtcNow;
-            var defaultRates = await GetDefaultRates();
 
             var ratesToStore = new List<CurrencyRate>(rates.Count);
             foreach (var ((source, target), rate) in rates)
             {
-                var defaultRate = defaultRates.FirstOrDefault(r
-                    => r.Source.ToString() == source
-                    && r.Target.ToString() == target);
+                var defaultRate = await GetDefaultRate(source, target);
 
                 ratesToStore.Add(new CurrencyRate
                 {
-                    Rate = defaultRate?.Rate ?? rate,
-                    RateCorrection = rate - defaultRate?.Rate ?? 0,
+                    Rate = defaultRate ?? rate,
+                    RateCorrection = rate - defaultRate ?? 0,
                     Source = source,
                     Target = target,
                     ValidFrom = now
@@ -191,17 +185,22 @@ namespace HappyTravel.CurrencyConverter.Services
             return Result.Ok<Dictionary<(string, string), decimal>, ProblemDetails>(results);
         }
 
-        private async ValueTask<List<DefaultCurrencyRate>> GetDefaultRates()
+        private async ValueTask<decimal?> GetDefaultRate(string source, string target)
         {
-            if (!_defaultRates.Any())
-                _defaultRates = await _context.DefaultCurrencyRates.ToListAsync();
-            return _defaultRates;
+            if (_defaultRates == null || !_defaultRates.Any())
+                _defaultRates = await _context.DefaultCurrencyRates.ToDictionaryAsync(
+                    r => (r.Source.ToString(), r.Target.ToString()), r => r.Rate);
+
+            if (_defaultRates.TryGetValue((source, target), out var defaultRate))
+                return defaultRate;
+
+            return null;
         }
 
 
         private const int SymbolLength = 3;
 
-        private List<DefaultCurrencyRate> _defaultRates = new List<DefaultCurrencyRate>();
+        private static Dictionary<(string, string), decimal>? _defaultRates;
         private readonly IDoubleFlow _cache;
         private readonly IHttpClientFactory _clientFactory;
         private readonly CurrencyConverterContext _context;
