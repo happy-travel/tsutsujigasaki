@@ -41,13 +41,12 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.4" />
     <PackageReference Include="Sentry.AspNetCore" Version="2.1.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.4.1" />
-    <PackageReference Include="OpenTelemetry" Version="0.2.0-alpha.354" />
-    <PackageReference Include="OpenTelemetry.Exporter.Jaeger" Version="0.2.0-alpha.354" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="0.2.0-alpha.354" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="0.2.0-alpha.354" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Dependencies" Version="0.2.0-alpha.354" />
-    <PackageReference Include="FloxDc.CacheFlow.OpenTelemetry" Version="1.7.1.354" />
-    <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.4" />
+    <PackageReference Include="OpenTelemetry" Version="0.6.0-beta.4" />
+    <PackageReference Include="OpenTelemetry.Exporter.Jaeger" Version="0.6.0-beta.4" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="0.6.0-beta.4" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="0.6.0-beta.4" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="0.6.0-beta.4" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.StackExchangeRedis" Version="0.6.0-beta.4" />
   </ItemGroup>
 
 

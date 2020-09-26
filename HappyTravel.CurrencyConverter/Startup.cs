@@ -28,8 +28,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using OpenTelemetry.Resources;
-using OpenTelemetry.Trace.Configuration;
-using OpenTelemetry.Trace.Samplers;
+using OpenTelemetry.Trace;
 using Polly;
 using Polly.Extensions.Http;
 
@@ -63,10 +62,7 @@ namespace HappyTravel.CurrencyConverter
 
             var currencyLayerOptions = vaultClient.Get(Configuration["CurrencyLayer:Options"]).Result;
             services.Configure<CurrencyLayerOptions>(options => { options.ApiKey = currencyLayerOptions["apiKey"]; });
-            services.Configure<FlowOptions>(options =>
-            {
-                options.SuppressCacheExceptions = false;
-            });
+            services.Configure<FlowOptions>(options => { options.SuppressCacheExceptions = false; });
 
             services.AddHttpClient(HttpClientNames.CurrencyLayer, client => { client.BaseAddress = new Uri("http://apilayer.net/api/"); })
                 .SetHandlerLifetime(TimeSpan.FromMinutes(5))
@@ -78,7 +74,7 @@ namespace HappyTravel.CurrencyConverter
                 options.DefaultApiVersion = new ApiVersion(1, 0);
                 options.ReportApiVersions = true;
             });
-          
+
             services.AddHealthChecks()
                 .AddDbContextCheck<CurrencyConverterContext>()
                 .AddCheck<ControllerResolveHealthCheck>(nameof(ControllerResolveHealthCheck));
@@ -89,7 +85,7 @@ namespace HappyTravel.CurrencyConverter
             services.AddMemoryCache()
                 .AddStackExchangeRedisCache(options => { options.Configuration = EnvironmentVariableHelper.Get("Redis:Endpoint", Configuration); })
                 .AddDoubleFlow()
-                .AddCacheFlowMessagePackSerialization(messagePackOptions, StandardResolver.Instance, NativeDecimalResolver.Instance, 
+                .AddCacheFlowMessagePackSerialization(messagePackOptions, StandardResolver.Instance, NativeDecimalResolver.Instance,
                     CSharpFunctionalExtensionsFormatResolver.Instance, ProblemDetailsFormatResolver.Instance)
                 .AddControllers()
                 .AddControllersAsServices();
@@ -99,10 +95,10 @@ namespace HappyTravel.CurrencyConverter
             services.AddProblemDetailsFactory();
 
             services = AddTracing(services, _environment, Configuration);
-            
+
             services.AddSwaggerGen(options =>
             {
-                options.SwaggerDoc("v1.0", new OpenApiInfo {Title = "HappyTravel.com Currency Converter API", Version = "v1.0" });
+                options.SwaggerDoc("v1.0", new OpenApiInfo { Title = "HappyTravel.com Currency Converter API", Version = "v1.0" });
 
                 var apiXmlCommentsFilePath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
                 options.IncludeXmlComments(apiXmlCommentsFilePath);
@@ -175,21 +171,21 @@ namespace HappyTravel.CurrencyConverter
                 agentHost = EnvironmentVariableHelper.Get("Jaeger:AgentHost", configuration);
                 agentPort = int.Parse(EnvironmentVariableHelper.Get("Jaeger:AgentPort", configuration));
             }
-            
+
             var serviceName = $"{environment.ApplicationName}-{environment.EnvironmentName}";
-            services.AddOpenTelemetrySdk(builder =>
+            services.AddOpenTelemetryTracing(builder =>
             {
-                builder.AddRequestInstrumentation()
-                    .AddDependencyInstrumentation()
+                builder.AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
                     //.AddCacheFlowInstrumentation()
-                    .UseJaegerActivityExporter(options =>
+                    .AddJaegerExporter(options =>
                     {
                         options.ServiceName = serviceName;
                         options.AgentHost = agentHost;
                         options.AgentPort = agentPort;
                     })
                     .SetResource(Resources.CreateServiceResource(serviceName))
-                    .SetSampler(new AlwaysOnActivitySampler());
+                    .SetSampler(new AlwaysOnSampler());
             });
 
             return services;

@@ -3,15 +3,17 @@ using System;
 using HappyTravel.CurrencyConverter.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace HappyTravel.CurrencyConverter.Migrations
 {
     [DbContext(typeof(CurrencyConverterContext))]
-    partial class CurrencyConverterContextModelSnapshot : ModelSnapshot
+    [Migration("20200924140542_AddDefaultConfigurationsForRate")]
+    partial class AddDefaultConfigurationsForRate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
