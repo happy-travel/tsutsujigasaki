@@ -1,5 +1,9 @@
 replicaCount: 1
 
+jaeger:
+  sidecar: jaeger-dev
+  collector_host: dns:///jaeger-dev-collector-headless.observability:14250
+
 image:
   repository: registry.happytravel.com/cc
   tag: latest
@@ -72,5 +76,5 @@ env:
   HTDC_VAULT_ENDPOINT: "https://vault.dev.happytravel.com/v1/"
   HTDC_TSUTSUJIGASAKI_SENTRY_ENDPOINT: "https://df89400a0d23436dbd54be0167bb021c@sentry.dev.happytravel.com/18"
   HTDC_REDIS_HOST: "redis-tsutsujigasaki"
-  JAEGER_AGENT_HOST: "jaeger-agent"
+  JAEGER_AGENT_HOST: "localhost"
   JAEGER_AGENT_PORT: "6831"
