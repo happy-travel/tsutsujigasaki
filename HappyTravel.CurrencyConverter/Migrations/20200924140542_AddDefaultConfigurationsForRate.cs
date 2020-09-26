@@ -7,7 +7,7 @@ namespace HappyTravel.CurrencyConverter.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             var sql = @"INSERT INTO ""DefaultCurrencyRates"" (""Source"", ""Target"", ""Rate"")
-            VALUES(1,3,3.668)";
+            VALUES(1,3,3.668), (3,1,0.2726)";
             migrationBuilder.Sql(sql);
         }
 
