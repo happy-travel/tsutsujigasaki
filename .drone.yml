@@ -49,6 +49,24 @@ trigger:
       - push
 
 steps:
+- name: Run migrations
+  image: mcr.microsoft.com/dotnet/core/sdk:3.1
+  environment:
+    GITHUB_TOKEN:
+      from_secret: GITHUB_TOKEN
+    HTDC_VAULT_TOKEN:
+      from_secret: VAULT_DEV_TOKEN      
+    HTDC_VAULT_ENDPOINT:
+      from_secret: VAULT_DEV_ENDPOINT
+    JAEGER_AGENT_HOST: 'localhost'
+    JAEGER_AGENT_PORT: '6831'
+    HTDC_TSUTSUJIGASAKI_SENTRY_ENDPOINT:
+      from_secret: SENTRY_DEV_ENDPOINT
+  commands:
+    - cd HappyTravel.CurrencyConverter
+    - dotnet tool restore
+    - dotnet ef database update
+
 - name: Build docker image & push to repository
   image: plugins/docker
   environment:
@@ -61,7 +79,7 @@ steps:
     registry: registry.happytravel.com
     repo: registry.happytravel.com/cc
     tags:
-      - ${DRONE_COMMIT_SHA:0:7}
+      - ${DRONE_COMMIT_SHA:0:7}-DEV
       - ${DRONE_COMMIT_BRANCH}
     force_tag: true
     use_cache: true
@@ -84,7 +102,7 @@ steps:
     namespace: dev
     skip_tls_verify: true
     wait_for_upgrade: true
-    values: image.tag=${DRONE_COMMIT_SHA:0:7}
+    values: image.tag=${DRONE_COMMIT_SHA:0:7}-DEV
   environment:
     KUBE_API_SERVER:
       from_secret: KUBERNETES_DEV_API
@@ -187,6 +205,24 @@ trigger:
     - production    
 
 steps:
+- name: Run migrations
+  image: mcr.microsoft.com/dotnet/core/sdk:3.1
+  environment:
+    GITHUB_TOKEN:
+      from_secret: GITHUB_TOKEN
+    HTDC_VAULT_TOKEN:
+      from_secret: VAULT_PROD_TOKEN      
+    HTDC_VAULT_ENDPOINT:
+      from_secret: VAULT_PROD_ENDPOINT
+    JAEGER_AGENT_HOST: 'localhost'
+    JAEGER_AGENT_PORT: '6831'
+    HTDC_TSUTSUJIGASAKI_SENTRY_ENDPOINT:
+      from_secret: SENTRY_PRODUCTION_ENDPOINT
+  commands:
+    - cd HappyTravel.CurrencyConverter
+    - dotnet tool restore
+    - dotnet ef database update
+  
 - name: Build docker image & push to repository
   image: plugins/docker
   environment:
