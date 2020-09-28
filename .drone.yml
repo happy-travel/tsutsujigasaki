@@ -93,7 +93,7 @@ steps:
       - BUILD_VERSION
 
 - name: Deploy to DEV
-  image: pelotech/drone-helm3
+  image: pelotech/drone-helm3:0.14.2
   settings:
     mode: upgrade
     chart: ./Helm_v3/cc
@@ -162,7 +162,7 @@ steps:
       - BUILD_VERSION
 
 - name: Deploy to staging
-  image: pelotech/drone-helm3
+  image: pelotech/drone-helm3:0.14.2
   settings:
     mode: upgrade
     chart: ./Helm_v3/cc
@@ -249,7 +249,7 @@ steps:
       - BUILD_VERSION
 
 - name: Deploy to production
-  image: pelotech/drone-helm3
+  image: pelotech/drone-helm3:0.14.2
   settings:
     mode: upgrade
     chart: ./Helm_v3/cc
