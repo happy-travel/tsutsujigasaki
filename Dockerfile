@@ -10,14 +10,14 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
 ARG GITHUB_TOKEN
 WORKDIR /src
 COPY *.sln ./
-COPY HappyTravel.CurrencyConverter/HappyTravel.CurrencyConverter.csproj HappyTravel.CurrencyConverter/
-COPY HappyTravel.CurrencyConverterTests/HappyTravel.CurrencyConverterTests.csproj HappyTravel.CurrencyConverterTests/
+COPY HappyTravel.CurrencyConverterApi/HappyTravel.CurrencyConverterApi.csproj HappyTravel.CurrencyConverterApi/
+COPY HappyTravel.CurrencyConverterApiTests/HappyTravel.CurrencyConverterApiTests.csproj HappyTravel.CurrencyConverterApiTests/
 COPY nuget.config ./
 RUN dotnet restore
 COPY . .
-WORKDIR /src/HappyTravel.CurrencyConverterTests
+WORKDIR /src/HappyTravel.CurrencyConverterApiTests
 RUN dotnet test
-WORKDIR /src/HappyTravel.CurrencyConverter
+WORKDIR /src/HappyTravel.CurrencyConverterApi
 RUN dotnet build -c Release -o /app
 
 FROM build AS publish
@@ -30,4 +30,4 @@ COPY --from=publish /app .
 
 HEALTHCHECK --interval=6s --timeout=10s --retries=3 CMD curl -sS 127.0.0.1/health || exit 1
 
-ENTRYPOINT ["dotnet", "HappyTravel.CurrencyConverter.dll"]
+ENTRYPOINT ["dotnet", "HappyTravel.CurrencyConverterApi.dll"]
