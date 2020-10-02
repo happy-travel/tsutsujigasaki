@@ -61,7 +61,7 @@ namespace HappyTravel.CurrencyConverter
             if (list.FirstOrDefault().Currency != _sourceCurrency)
                 throw new ArgumentException("The source amount currency mismatches with a predefined one.");
 
-            return ConvertInternal(_rate, _targetCurrency, list);
+            return ConvertInternal(_rate, _sourceCurrency, _targetCurrency, list);
         }
         
         
@@ -74,7 +74,7 @@ namespace HappyTravel.CurrencyConverter
             var sourceCurrency = list.FirstOrDefault().Currency;
             CheckPreconditions(in rate, sourceCurrency, targetCurrency);
 
-            return ConvertInternal(in rate, targetCurrency, list);
+            return ConvertInternal(in rate, sourceCurrency, targetCurrency, list);
         }
 
 
@@ -91,15 +91,24 @@ namespace HappyTravel.CurrencyConverter
         }
 
 
-        private static Dictionary<MoneyAmount, MoneyAmount> ConvertInternal(in decimal rate, Currencies targetCurrency, List<MoneyAmount> sourceValues)
+        private static Dictionary<MoneyAmount, MoneyAmount> ConvertInternal(in decimal rate, Currencies sourceCurrency, Currencies targetCurrency,
+            List<MoneyAmount> sourceValues, bool useBuffer = false)
         {
+            var mutatedRate = rate;
+            if (useBuffer)
+            {
+                var conversionBuffer = ConversionBuffers.GetBuffer(sourceCurrency, targetCurrency);
+                mutatedRate = rate * (decimal.One + conversionBuffer);
+            }
+
             var results = new Dictionary<MoneyAmount, MoneyAmount>(sourceValues.Count);
             foreach (var sourceValue in sourceValues)
             {
                 if (results.ContainsKey(sourceValue))
                     continue;
 
-                var targetAmount = new MoneyAmount(sourceValue.Amount * rate, targetCurrency);
+                var amount = sourceValue.Amount * mutatedRate;
+                var targetAmount = new MoneyAmount(amount, targetCurrency);
                 results.Add(sourceValue, targetAmount);
             }
 
