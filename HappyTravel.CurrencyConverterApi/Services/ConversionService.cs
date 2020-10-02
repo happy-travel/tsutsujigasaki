@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
+using HappyTravel.CurrencyConverter;
 using HappyTravel.CurrencyConverterApi.Infrastructure;
 using HappyTravel.Money.Enums;
-using HappyTravel.Money.Helpers;
+using HappyTravel.Money.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -19,51 +20,37 @@ namespace HappyTravel.CurrencyConverterApi.Services
         }
 
 
-        public async ValueTask<Result<decimal, ProblemDetails>> Convert(Currencies sourceCurrency, Currencies targetCurrency, decimal value)
+        public async ValueTask<Result<MoneyAmount, ProblemDetails>> Convert(Currencies sourceCurrency, Currencies targetCurrency, decimal value)
         {
             var (_, isFailure, results, error) = await Convert(sourceCurrency, targetCurrency, new List<decimal>(1) {value});
             if (isFailure)
-                return Result.Failure<decimal, ProblemDetails>(error);
+                return Result.Failure<MoneyAmount, ProblemDetails>(error);
 
-            if (results.TryGetValue(value, out var result))
-                return Result.Ok<decimal, ProblemDetails>(result);
+            if (results.TryGetValue(new MoneyAmount(value, targetCurrency), out var result))
+                return Result.Success<MoneyAmount, ProblemDetails>(result);
 
-            return ProblemDetailsBuilder.FailAndLogNoQuoteFound<decimal>(_logger, sourceCurrency.ToString() + targetCurrency);
+            return ProblemDetailsBuilder.FailAndLogNoQuoteFound<MoneyAmount>(_logger, sourceCurrency.ToString() + targetCurrency);
         }
 
 
-        public async ValueTask<Result<Dictionary<decimal, decimal>, ProblemDetails>> Convert(Currencies sourceCurrency, Currencies targetCurrency, List<decimal> values)
+        public async ValueTask<Result<Dictionary<MoneyAmount, MoneyAmount>, ProblemDetails>> Convert(Currencies sourceCurrency, Currencies targetCurrency, List<decimal> values)
         {
-            if (sourceCurrency == Currencies.NotSpecified)
-                return ProblemDetailsBuilder.FailAndLogArgumentNullOrEmpty<Dictionary<decimal, decimal>>(_logger, nameof(sourceCurrency));
-
-            if (targetCurrency == Currencies.NotSpecified)
-                return ProblemDetailsBuilder.FailAndLogArgumentNullOrEmpty<Dictionary<decimal, decimal>>(_logger, nameof(targetCurrency));
-
-            if (values is null || !values.Any())
-                return ProblemDetailsBuilder.FailAndLogArgumentNullOrEmpty<Dictionary<decimal, decimal>>(_logger, nameof(values));
-
-            if (sourceCurrency == targetCurrency)
-                return Result.Ok<Dictionary<decimal, decimal>, ProblemDetails>(values.ToDictionary(v => v, v => v));
-
-            var (_, isFailure, rate, error) = await _rateService.Get(sourceCurrency, targetCurrency);
-            if (isFailure)
-                return Result.Failure<Dictionary<decimal, decimal>, ProblemDetails>(error);
-
-            var results = new Dictionary<decimal, decimal>(values.Count);
-            foreach (var value in values)
+            try
             {
-                var ceiled = MoneyCeiler.Ceil(value * rate, targetCurrency);
-                var isSane = IsSane(ceiled);
-                if (isSane)
-                    results.TryAdd(value, ceiled);
+                var (_, isFailure, rate, error) = await _rateService.Get(sourceCurrency, targetCurrency);
+                if (isFailure)
+                    return Result.Failure<Dictionary<MoneyAmount, MoneyAmount>, ProblemDetails>(error);
+
+                var converter = ConverterFactory.Create(in rate, sourceCurrency, targetCurrency);
+                var results = converter.Convert(values);
+                
+                return Result.Success<Dictionary<MoneyAmount, MoneyAmount>, ProblemDetails>(results);
+
             }
-
-            return Result.Ok<Dictionary<decimal, decimal>, ProblemDetails>(results);
-
-
-            static bool IsSane(decimal value) 
-                => value > decimal.Zero;
+            catch (Exception ex)
+            {
+                return ProblemDetailsBuilder.Build(ex.Message, ex.Message);
+            }
         }
 
 

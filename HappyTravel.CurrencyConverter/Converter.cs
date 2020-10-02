@@ -8,20 +8,18 @@ namespace HappyTravel.CurrencyConverter
 {
     public class Converter
     {
-        public Converter(in decimal rate, Currencies sourceCurrency, Currencies targetCurrency)
+        internal Converter(in decimal rate, Currencies sourceCurrency, Currencies targetCurrency)
         {
             _rate = rate;
             _sourceCurrency = sourceCurrency;
             _targetCurrency = targetCurrency;
-
-            CheckPreconditions(in _rate, _sourceCurrency, _targetCurrency);
         }
 
 
         public MoneyAmount Convert(in MoneyAmount sourceValue)
         {
             if (sourceValue.Currency != _sourceCurrency)
-                throw new ArgumentException("The source amount currency n=mismatches with a predefined one.");
+                throw new ArgumentException("The source amount currency mismatches with a predefined one.");
 
             return Convert(in _rate, _targetCurrency, in sourceValue);
         }
@@ -44,6 +42,16 @@ namespace HappyTravel.CurrencyConverter
             => Convert(in rate, targetCurrency, new MoneyAmount(value, sourceCurrency));
 
 
+        public Dictionary<MoneyAmount, MoneyAmount> Convert(IEnumerable<decimal> sourceValues)
+        {
+            if (sourceValues is null)
+                throw new ArgumentNullException(nameof(sourceValues));
+
+            var amounts = sourceValues.Select(v => new MoneyAmount(v, _sourceCurrency));
+            return Convert(amounts);
+        }
+
+
         public Dictionary<MoneyAmount, MoneyAmount> Convert(IEnumerable<MoneyAmount> sourceValues)
         {
             if (sourceValues is null)
@@ -51,7 +59,7 @@ namespace HappyTravel.CurrencyConverter
 
             var list = sourceValues.ToList();
             if (list.FirstOrDefault().Currency != _sourceCurrency)
-                throw new ArgumentException("The source amount currency n=mismatches with a predefined one.");
+                throw new ArgumentException("The source amount currency mismatches with a predefined one.");
 
             return ConvertInternal(_rate, _targetCurrency, list);
         }
@@ -70,7 +78,7 @@ namespace HappyTravel.CurrencyConverter
         }
 
 
-        private static void CheckPreconditions(in decimal rate, Currencies sourceCurrency, Currencies targetCurrency)
+        internal static void CheckPreconditions(in decimal rate, Currencies sourceCurrency, Currencies targetCurrency)
         {
             if (targetCurrency == Currencies.NotSpecified)
                 throw new ArgumentException("The target currency must be specified.");

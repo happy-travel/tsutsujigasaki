@@ -64,7 +64,7 @@ namespace HappyTravel.CurrencyConverterTests
         public void Convert_should_throw_exception_when_different_source_currency_had_passed_into_instance()
         {
             var amount = new MoneyAmount(1m, Currencies.AED);
-            var converter = new Converter(1m, Currencies.EUR, Currencies.USD);
+            var converter = ConverterFactory.Create(1m, Currencies.EUR, Currencies.USD);
 
             Assert.Throws<ArgumentException>(() => converter.Convert(amount));
         }
