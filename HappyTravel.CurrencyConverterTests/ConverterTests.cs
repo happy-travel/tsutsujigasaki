@@ -7,14 +7,25 @@ using Xunit;
 
 namespace HappyTravel.CurrencyConverterTests
 {
-    public class ConverterTests
+    public class ConverterTests : IClassFixture<ConverterTestsFixture>
     {
+        private readonly ConverterTestsFixture _fixture;
+
+
+        public ConverterTests(ConverterTestsFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
+
         [Theory]
         [InlineData(Currencies.AED, Currencies.AED)]
         [InlineData(Currencies.USD, Currencies.USD)]
         public void Convert_should_throws_exception_when_source_and_target_currencies_are_same(Currencies sourceCurrency, Currencies targetCurrency)
         {
-            Assert.Throws<ArgumentException>(() => Converter.Convert(1.5m, targetCurrency, new MoneyAmount(1m, sourceCurrency)));
+            var factory = new CurrencyConverterFactory(_fixture.ExceptionalPairs);
+
+            Assert.Throws<ArgumentException>(() => factory.Create(1.5m, sourceCurrency, targetCurrency));
         }
 
 
@@ -25,12 +36,15 @@ namespace HappyTravel.CurrencyConverterTests
         [InlineData(Currencies.USD, Currencies.AED)]
         public void Convert_should_convert_from_source_currency_to_target_currency(Currencies sourceCurrency, Currencies targetCurrency)
         {
-            var result = Converter.Convert(1m, sourceCurrency, targetCurrency, 0m);
+            var factory = new CurrencyConverterFactory(_fixture.ExceptionalPairs);
+            var converter = factory.Create(1m, sourceCurrency, targetCurrency);
+
+            var result = converter.Convert(0m);
 
             Assert.Equal(targetCurrency, result.Currency);
         }
 
-
+        
         [Theory]
         [InlineData(0, 0)]
         [InlineData(1, 1)]
@@ -38,15 +52,21 @@ namespace HappyTravel.CurrencyConverterTests
         [InlineData(-10, -10)]
         public void Convert_Should_convert_values(decimal rate, decimal expected)
         {
-            var result = Converter.Convert(rate, Currencies.EUR, new MoneyAmount(1m, Currencies.USD));
+            var factory = new CurrencyConverterFactory(_fixture.ExceptionalPairs);
+            var converter = factory.Create(rate, Currencies.USD, Currencies.EUR);
+
+            var result = converter.Convert(new MoneyAmount(1m, Currencies.USD));
 
             Assert.Equal(expected, result.Amount);
         }
 
-
+        
         [Fact]
         public void Convert_should_skip_same_values()
         {
+            var factory = new CurrencyConverterFactory(_fixture.ExceptionalPairs);
+            var converter = factory.Create(1m, Currencies.EUR, Currencies.EUR);
+
             var sources = new List<MoneyAmount>
             {
                 new MoneyAmount(4m, Currencies.EUR),
@@ -54,18 +74,20 @@ namespace HappyTravel.CurrencyConverterTests
                 new MoneyAmount(2m, Currencies.EUR)
             };
 
-            var results = Converter.Convert(1m, Currencies.EUR, sources);
+            var results = converter.Convert(sources);
 
             Assert.Equal(2, results.Count);
         }
 
-
+        
         [Fact]
         public void Convert_should_throw_exception_when_different_source_currency_had_passed_into_instance()
         {
-            var amount = new MoneyAmount(1m, Currencies.AED);
-            var converter = ConverterFactory.Create(1m, Currencies.EUR, Currencies.USD);
+            var factory = new CurrencyConverterFactory(_fixture.ExceptionalPairs);
+            var converter = factory.Create(1m, Currencies.EUR, Currencies.USD);
 
+            var amount = new MoneyAmount(1m, Currencies.AED);
+            
             Assert.Throws<ArgumentException>(() => converter.Convert(amount));
         }
 
@@ -73,21 +95,28 @@ namespace HappyTravel.CurrencyConverterTests
         [Fact]
         public void Convert_should_throw_exception_when_null_value_provided()
         {
-            Assert.Throws<ArgumentNullException>(() => Converter.Convert(1m, Currencies.NotSpecified, null!));
+            var factory = new CurrencyConverterFactory(_fixture.ExceptionalPairs);
+            var converter = factory.Create(1m, Currencies.USD, Currencies.EUR);
+
+            Assert.Throws<ArgumentNullException>(() => converter.Convert((IEnumerable<decimal>) null!));
         }
 
 
         [Fact]
         public void Convert_should_throw_exception_when_source_currency_unspecified()
         {
-            Assert.Throws<ArgumentException>(() => Converter.Convert(1m, Currencies.EUR, new MoneyAmount(1m, Currencies.NotSpecified)));
+            var factory = new CurrencyConverterFactory(_fixture.ExceptionalPairs);
+
+            Assert.Throws<ArgumentException>(() => factory.Create(1m, Currencies.NotSpecified, Currencies.EUR));
         }
 
 
         [Fact]
         public void Convert_should_throw_exception_when_target_currency_unspecified()
         {
-            Assert.Throws<ArgumentException>(() => Converter.Convert(1m, Currencies.NotSpecified, new MoneyAmount(1m, Currencies.EUR)));
+            var factory = new CurrencyConverterFactory(_fixture.ExceptionalPairs);
+
+            Assert.Throws<ArgumentException>(() => factory.Create(1m, Currencies.EUR, Currencies.NotSpecified));
         }
     }
 }

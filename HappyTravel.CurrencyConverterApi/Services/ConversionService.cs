@@ -13,8 +13,9 @@ namespace HappyTravel.CurrencyConverterApi.Services
 {
     public class ConversionService : IConversionService
     {
-        public ConversionService(ILoggerFactory loggerFactory, IRateService rateService)
+        public ConversionService(ILoggerFactory loggerFactory, IRateService rateService, ICurrencyConverterFactory converterFactory)
         {
+            _converterFactory = converterFactory;
             _logger = loggerFactory.CreateLogger<ConversionService>();
             _rateService = rateService;
         }
@@ -41,7 +42,7 @@ namespace HappyTravel.CurrencyConverterApi.Services
                 if (isFailure)
                     return Result.Failure<Dictionary<MoneyAmount, MoneyAmount>, ProblemDetails>(error);
 
-                var converter = ConverterFactory.Create(in rate, sourceCurrency, targetCurrency);
+                var converter = _converterFactory.Create(in rate, sourceCurrency, targetCurrency);
                 var results = converter.Convert(values);
                 
                 return Result.Success<Dictionary<MoneyAmount, MoneyAmount>, ProblemDetails>(results);
@@ -54,6 +55,7 @@ namespace HappyTravel.CurrencyConverterApi.Services
         }
 
 
+        private readonly ICurrencyConverterFactory _converterFactory;
         private readonly ILogger<ConversionService> _logger;
         private readonly IRateService _rateService;
     }

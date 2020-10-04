@@ -6,10 +6,11 @@ using HappyTravel.Money.Models;
 
 namespace HappyTravel.CurrencyConverter
 {
-    public class Converter
+    public class CurrencyConverter
     {
-        internal Converter(in decimal rate, Currencies sourceCurrency, Currencies targetCurrency)
+        internal CurrencyConverter(ConversionBufferService bufferService, in decimal rate, Currencies sourceCurrency, Currencies targetCurrency)
         {
+            _bufferService = bufferService;
             _rate = rate;
             _sourceCurrency = sourceCurrency;
             _targetCurrency = targetCurrency;
@@ -21,25 +22,15 @@ namespace HappyTravel.CurrencyConverter
             if (sourceValue.Currency != _sourceCurrency)
                 throw new ArgumentException("The source amount currency mismatches with a predefined one.");
 
-            return Convert(in _rate, _targetCurrency, in sourceValue);
-        }
-
-
-        public MoneyAmount Convert(in decimal sourceValue) 
-            => Convert(in _rate, _targetCurrency, new MoneyAmount(sourceValue, _sourceCurrency));
-
-
-        public static MoneyAmount Convert(in decimal rate, Currencies targetCurrency, in MoneyAmount sourceValue)
-        {
-            var results = Convert(in rate, targetCurrency, new[] {sourceValue});
+            var results = Convert(new[] {sourceValue});
             results.TryGetValue(sourceValue, out var result);
 
             return result;
         }
-        
 
-        public static MoneyAmount Convert(in decimal rate, Currencies sourceCurrency, Currencies targetCurrency, in decimal value) 
-            => Convert(in rate, targetCurrency, new MoneyAmount(value, sourceCurrency));
+
+        public MoneyAmount Convert(in decimal sourceValue) 
+            => Convert(new MoneyAmount(sourceValue, _sourceCurrency));
 
 
         public Dictionary<MoneyAmount, MoneyAmount> Convert(IEnumerable<decimal> sourceValues)
@@ -61,20 +52,10 @@ namespace HappyTravel.CurrencyConverter
             if (list.FirstOrDefault().Currency != _sourceCurrency)
                 throw new ArgumentException("The source amount currency mismatches with a predefined one.");
 
-            return ConvertInternal(_rate, _sourceCurrency, _targetCurrency, list);
-        }
-        
-        
-        public static Dictionary<MoneyAmount, MoneyAmount> Convert(in decimal rate, Currencies targetCurrency, IEnumerable<MoneyAmount> sourceValues)
-        {
-            if (sourceValues is null)
-                throw new ArgumentNullException(nameof(sourceValues));
-            
-            var list = sourceValues.ToList();
-            var sourceCurrency = list.FirstOrDefault().Currency;
-            CheckPreconditions(in rate, sourceCurrency, targetCurrency);
+            var conversionBuffer = _bufferService.GetBuffer(_sourceCurrency, _targetCurrency);
+            var adjustedRate = _rate * (decimal.One + conversionBuffer);
 
-            return ConvertInternal(in rate, sourceCurrency, targetCurrency, list);
+            return ConvertInternal(adjustedRate, _targetCurrency, list);
         }
 
 
@@ -91,23 +72,15 @@ namespace HappyTravel.CurrencyConverter
         }
 
 
-        private static Dictionary<MoneyAmount, MoneyAmount> ConvertInternal(in decimal rate, Currencies sourceCurrency, Currencies targetCurrency,
-            List<MoneyAmount> sourceValues, bool useBuffer = false)
+        private Dictionary<MoneyAmount, MoneyAmount> ConvertInternal(in decimal rate, Currencies targetCurrency, List<MoneyAmount> sourceValues)
         {
-            var mutatedRate = rate;
-            if (useBuffer)
-            {
-                var conversionBuffer = ConversionBuffers.GetBuffer(sourceCurrency, targetCurrency);
-                mutatedRate = rate * (decimal.One + conversionBuffer);
-            }
-
             var results = new Dictionary<MoneyAmount, MoneyAmount>(sourceValues.Count);
             foreach (var sourceValue in sourceValues)
             {
                 if (results.ContainsKey(sourceValue))
                     continue;
 
-                var amount = sourceValue.Amount * mutatedRate;
+                var amount = sourceValue.Amount * rate;
                 var targetAmount = new MoneyAmount(amount, targetCurrency);
                 results.Add(sourceValue, targetAmount);
             }
@@ -116,6 +89,7 @@ namespace HappyTravel.CurrencyConverter
         }
 
 
+        private readonly ConversionBufferService _bufferService;
         private readonly decimal _rate;
         private readonly Currencies _sourceCurrency;
         private readonly Currencies _targetCurrency;
