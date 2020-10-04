@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using HappyTravel.CurrencyConverter;
 using HappyTravel.CurrencyConverter.Infrastructure;
 using HappyTravel.Money.Enums;
-using Moq;
 
 namespace HappyTravel.CurrencyConverterApiTests
 {
@@ -11,12 +10,7 @@ namespace HappyTravel.CurrencyConverterApiTests
     {
         public ConversionServiceTestsFixture()
         {
-            var factory = new CurrencyConverterFactory(Pairs);
-            var factoryMock = new Mock<ICurrencyConverterFactory>();
-            factoryMock.Setup(f => f.Create(It.IsAny<decimal>(), It.IsAny<Currencies>(), It.IsAny<Currencies>()))
-                .Returns<decimal, Currencies, Currencies>((r, sc, tc) => factory.Create(in r, sc, tc));
-
-            Factory = factoryMock.Object;
+            Factory = new CurrencyConverterFactory(Pairs);
         }
 
 
