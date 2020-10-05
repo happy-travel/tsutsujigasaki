@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.CurrencyConverterApi.Services;
 using HappyTravel.Money.Enums;
+using HappyTravel.Money.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HappyTravel.CurrencyConverterApi.Controllers
@@ -28,7 +29,7 @@ namespace HappyTravel.CurrencyConverterApi.Controllers
         /// <param name="targetCurrency">The target currency code</param>
         /// <param name="values"></param>
         /// <returns>Pairs of original and converted values in a list</returns>
-        [ProducesResponseType(typeof(Dictionary<decimal, decimal>), (int) HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Dictionary<MoneyAmount, MoneyAmount>), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [HttpGet("{sourceCurrency}/{targetCurrency}")]
         public async Task<IActionResult> Convert([FromRoute] Currencies sourceCurrency, [FromRoute] Currencies targetCurrency, [FromQuery] IEnumerable<decimal> values)
@@ -48,7 +49,7 @@ namespace HappyTravel.CurrencyConverterApi.Controllers
         /// <param name="targetCurrency">The target currency code</param>
         /// <param name="value"></param>
         /// <returns>The converted value</returns>
-        [ProducesResponseType(typeof(decimal), (int) HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(MoneyAmount), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [HttpGet("{sourceCurrency}/{targetCurrency}/{value}")]
         public async Task<IActionResult> Convert([FromRoute] Currencies sourceCurrency, [FromRoute] Currencies targetCurrency, [FromRoute] decimal value)

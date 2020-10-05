@@ -26,24 +26,24 @@ namespace HappyTravel.CurrencyConverterApiTests
     public class RatesServiceTests
     {
         [Fact]
-        public void RatesService_ShouldThrowExceptionWhenLoggerFactoryIsnull()
+        public void RatesService_should_throw_exception_when_logger_factory_is_null()
         {
-            Assert.Throws<ArgumentNullException>(() => new RateService(null, null, null, null, null));
+            Assert.Throws<ArgumentNullException>(() => new RateService(null!, null!, null!, null!, null!));
         }
 
 
         [Fact]
-        public void RatesService_ShouldThrowExceptionWhenOptionsAreNull()
+        public void RatesService_should_throw_exception_when_options_are_Null()
         {
             Assert.Throws<NullReferenceException>(
-                () => new RateService(new NullLoggerFactory(), null, null, null, null));
+                () => new RateService(new NullLoggerFactory(), null!, null!, null!, null!));
         }
 
 
         [Fact]
-        public async Task Get_ShouldReturnErrorWhenSourceCurrencyIsNotSpecified()
+        public async Task Get_should_return_error_when_source_currency_is_not_specified()
         {
-            var service = new RateService(new NullLoggerFactory(), null, null, _options, null);
+            var service = new RateService(new NullLoggerFactory(), null!, null!, _options, null!);
             var (_, isFailure, _, error) = await service.Get(Currencies.NotSpecified, Currencies.AED);
 
             Assert.True(isFailure);
@@ -52,9 +52,9 @@ namespace HappyTravel.CurrencyConverterApiTests
 
 
         [Fact]
-        public async Task Get_ShouldReturnErrorWhenTargetCurrencyIsNotSpecified()
+        public async Task Get_should_return_error_when_target_currency_is_not_specified()
         {
-            var service = new RateService(new NullLoggerFactory(), null, null, _options, null);
+            var service = new RateService(new NullLoggerFactory(), null!, null!, _options, null!);
             var (_, isFailure, _, error) = await service.Get(Currencies.USD, Currencies.NotSpecified);
 
             Assert.True(isFailure);
@@ -63,9 +63,9 @@ namespace HappyTravel.CurrencyConverterApiTests
 
 
         [Fact]
-        public async Task Get_ShouldReturnOneWhenSoursAndTargetCurrenciesAreTheSame()
+        public async Task Get_should_return_one_when_source_and_target_currencies_are_the_same()
         {
-            var service = new RateService(new NullLoggerFactory(), null, null, _options, null);
+            var service = new RateService(new NullLoggerFactory(), null!, null!, _options, null!);
             var (isSuccess, _, value, _) = await service.Get(Currencies.USD, Currencies.USD);
 
             Assert.True(isSuccess);
@@ -74,9 +74,9 @@ namespace HappyTravel.CurrencyConverterApiTests
 
 
         [Fact]
-        public async Task Get_ShouldThrowExceptionWhenCacheIsNull()
+        public async Task Get_should_throw_exception_when_cache_is_null()
         {
-            var service = new RateService(new NullLoggerFactory(), null, null, _options, null);
+            var service = new RateService(new NullLoggerFactory(), null!, null!, _options, null!);
 
             await Assert.ThrowsAsync<NullReferenceException>(async ()
                 => await service.Get(Currencies.USD, Currencies.AED));
@@ -84,9 +84,9 @@ namespace HappyTravel.CurrencyConverterApiTests
 
 
         [Fact]
-        public async Task Get_ShouldThrowExceptionWhenClientFactoryIsNull()
+        public async Task Get_should_throw_exception_when_client_factory_is_null()
         {
-            var service = new RateService(new NullLoggerFactory(), GetCache(), null, _options, null);
+            var service = new RateService(new NullLoggerFactory(), GetCache(), null!, _options, null!);
 
             await Assert.ThrowsAsync<NullReferenceException>(async ()
                 => await service.Get(Currencies.USD, Currencies.AED));
@@ -94,7 +94,7 @@ namespace HappyTravel.CurrencyConverterApiTests
 
 
         [Fact]
-        public async Task Get_ShouldThrowExceptionWhenHttpClientThrowsException()
+        public async Task Get_should_throw_exception_when_http_client_throws_exception()
         {
             var handlerMock = new Mock<HttpMessageHandler>();
             handlerMock.Protected()
@@ -111,7 +111,7 @@ namespace HappyTravel.CurrencyConverterApiTests
                 .Returns(httpClient);
 
             var service = new RateService(new NullLoggerFactory(), GetCache(), clientFactoryMock.Object, _options,
-                null);
+                null!);
 
             await Assert.ThrowsAsync<NetworkInformationException>(async ()
                 => await service.Get(Currencies.USD, Currencies.AED));
@@ -119,12 +119,12 @@ namespace HappyTravel.CurrencyConverterApiTests
 
 
         [Fact]
-        public async Task Get_ShouldReturnProblemDetailsWhenResponseIsNotSuccessful()
+        public async Task Get_should_return_problem_details_when_response_is_not_successful()
         {
             const HttpStatusCode status = HttpStatusCode.BadRequest;
 
             var service = new RateService(new NullLoggerFactory(), GetCache(),
-                GetHttpClientFactory(new HttpResponseMessage(status)), _options, null);
+                GetHttpClientFactory(new HttpResponseMessage(status)), _options, null!);
             var (_, isFailure, _, error) = await service.Get(Currencies.USD, Currencies.AED);
 
             Assert.True(isFailure);
@@ -133,7 +133,7 @@ namespace HappyTravel.CurrencyConverterApiTests
 
 
         [Fact]
-        public async Task Get_ShouldReturnProblemDetailsWhenContentIsNotCurrencyLayerResponse()
+        public async Task Get_should_return_problem_details_when_content_is_not_currency_layer_response()
         {
             var response = new HttpResponseMessage
             {
@@ -142,7 +142,7 @@ namespace HappyTravel.CurrencyConverterApiTests
             };
 
             var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(response), _options,
-                null);
+                null!);
 
             await Assert.ThrowsAsync<JsonReaderException>(async ()
                 => await service.Get(Currencies.USD, Currencies.AED));
@@ -150,7 +150,7 @@ namespace HappyTravel.CurrencyConverterApiTests
 
 
         [Fact]
-        public async Task Get_ShouldReturnProblemDetailsWhenRatesAreNull()
+        public async Task Get_should_return_problem_details_when_rates_are_null()
         {
             var response = new HttpResponseMessage
             {
@@ -167,7 +167,7 @@ namespace HappyTravel.CurrencyConverterApiTests
             };
 
             var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(response), _options,
-                null);
+                null!);
             var (_, isFailure, _, error) = await service.Get(Currencies.USD, Currencies.AED);
 
             Assert.True(isFailure);
@@ -176,7 +176,7 @@ namespace HappyTravel.CurrencyConverterApiTests
 
 
         [Fact]
-        public async Task Get_ShouldReturnProblemDetailsWhenRatesAreEmpty()
+        public async Task Get_should_return_problem_details_when_rates_are_empty()
         {
             var response = new HttpResponseMessage
             {
@@ -193,7 +193,7 @@ namespace HappyTravel.CurrencyConverterApiTests
             };
 
             var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(response), _options,
-                null);
+                null!);
             var (_, isFailure, _, error) = await service.Get(Currencies.USD, Currencies.AED);
 
             Assert.True(isFailure);
@@ -202,9 +202,9 @@ namespace HappyTravel.CurrencyConverterApiTests
 
 
         [Fact]
-        public async Task Get_ShouldThrowExceptionWhenContextIsNull()
+        public async Task Get_should_throw_exception_when_context_is_null()
         {
-            var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(), _options, null);
+            var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(), _options, null!);
 
             await Assert.ThrowsAsync<NullReferenceException>(async ()
                 => await service.Get(Currencies.USD, Currencies.AED));
@@ -212,7 +212,7 @@ namespace HappyTravel.CurrencyConverterApiTests
 
 
         [Fact]
-        public async Task Get_ShouldReturnValue()
+        public async Task Get_should_return_value()
         {
             var currencyRatesMock = new List<CurrencyRate>().AsQueryable().BuildMockDbSet();
             var defaultCurrencyRatesMock = new List<DefaultCurrencyRate>().AsQueryable().BuildMockDbSet();
@@ -227,16 +227,14 @@ namespace HappyTravel.CurrencyConverterApiTests
 
             var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(), _options,
                 contextMock.Object);
-            var (isSuccess, _, returnedValue) = await service.Get(Currencies.USD, Currencies.AED);
+            var (isSuccess, _, _) = await service.Get(Currencies.USD, Currencies.AED);
 
             Assert.True(isSuccess);
-            //Because of serialization reasons
-            Assert.Equal(3.672982m, returnedValue);
         }
 
 
         [Fact]
-        public async Task Get_ShouldReturnProblemDetailsWhenPairNotInTheReturnedListAndNotInTheDatabase()
+        public async Task Get_should_return_problem_details_when_pair_not_in_the_returned_list_and_not_in_the_database()
         {
             var currencyRatesMock = new List<CurrencyRate>().AsQueryable().BuildMockDbSet();
             var defaultCurrencyRatesMock = new List<DefaultCurrencyRate>().AsQueryable().BuildMockDbSet();
@@ -259,7 +257,7 @@ namespace HappyTravel.CurrencyConverterApiTests
 
 
         [Fact]
-        public async Task Get_ShouldReturnValueWhenPairNotInTheReturnedList()
+        public async Task Get_should_return_value_when_pair_not_in_the_returned_list()
         {
             const decimal value = 12.3456m;
             var currencyRatesMock = new List<CurrencyRate>
@@ -286,7 +284,7 @@ namespace HappyTravel.CurrencyConverterApiTests
 
 
         [Fact]
-        public async Task Get_ShouldReturnTheLastValueWhenPairNotInTheReturnedList()
+        public async Task Get_should_return_the_last_value_when_pair_not_in_the_returned_list()
         {
             const decimal value = 12.3456m;
             var time = DateTime.UtcNow;
@@ -315,7 +313,7 @@ namespace HappyTravel.CurrencyConverterApiTests
 
 
         [Fact]
-        public async Task Get_ShouldReturnTheLastValueWithinALimitedTimeWhenPairNotInTheReturnedList()
+        public async Task Get_should_return_the_last_value_within_a_limited_time_when_pair_not_in_the_returned_list()
         {
             const decimal value = 12.3456m;
             var time = DateTime.UtcNow;
@@ -344,8 +342,9 @@ namespace HappyTravel.CurrencyConverterApiTests
             Assert.Equal(value, returnedValue);
         }
 
+
         [Fact]
-        public async Task Get_ShouldReturnDefaultRateAndLogCorrection()
+        public async Task Get_should_return_default_rate_and_log_correction()
         {
             var defaultRate = 3.668m;
             var correction = 3.672982m - defaultRate;

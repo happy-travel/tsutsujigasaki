@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using CacheFlow.MessagePack.Extensions;
 using FloxDc.CacheFlow;
 using FloxDc.CacheFlow.Extensions;
+using HappyTravel.CurrencyConverter.Extensions;
+using HappyTravel.CurrencyConverter.Infrastructure;
 using HappyTravel.CurrencyConverterApi.Conventions.Serialization;
 using HappyTravel.CurrencyConverterApi.Data;
 using HappyTravel.CurrencyConverterApi.Infrastructure;
@@ -12,6 +15,7 @@ using HappyTravel.CurrencyConverterApi.Infrastructure.Constants;
 using HappyTravel.CurrencyConverterApi.Infrastructure.Environments;
 using HappyTravel.CurrencyConverterApi.Services;
 using HappyTravel.ErrorHandling.Extensions;
+using HappyTravel.Money.Enums;
 using HappyTravel.VaultClient;
 using MessagePack;
 using MessagePack.CSharpFunctionalExtensions;
@@ -93,6 +97,22 @@ namespace HappyTravel.CurrencyConverterApi
             services.AddTransient<IRateService, RateService>();
             services.AddTransient<IConversionService, ConversionService>();
             services.AddProblemDetailsFactory();
+            //TODO: move to Consul when it will be ready
+            services.AddCurrencyConversionFactory(new List<BufferPair>
+            {
+                new BufferPair
+                {
+                    BufferValue = decimal.Zero,
+                    SourceCurrency = Currencies.AED,
+                    TargetCurrency = Currencies.USD
+                },
+                new BufferPair
+                {
+                    BufferValue = decimal.Zero,
+                    SourceCurrency = Currencies.USD,
+                    TargetCurrency = Currencies.AED
+                },
+            });
 
             services = AddTracing(services, _environment, Configuration);
 

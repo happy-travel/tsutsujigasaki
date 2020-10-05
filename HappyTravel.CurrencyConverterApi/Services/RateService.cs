@@ -44,7 +44,7 @@ namespace HappyTravel.CurrencyConverterApi.Services
                 return ProblemDetailsBuilder.FailAndLogArgumentNullOrEmpty<decimal>(_logger, nameof(targetCurrency));
 
             if (sourceCurrency == targetCurrency)
-                return Result.Ok<decimal, ProblemDetails>(1);
+                return Result.Success<decimal, ProblemDetails>(1);
 
             var cacheKey = _cache.BuildKey(nameof(RateService), nameof(Get), sourceCurrency.ToString(),
                 targetCurrency.ToString());
@@ -71,7 +71,7 @@ namespace HappyTravel.CurrencyConverterApi.Services
                 return defaultRate.Value;
 
             if (rates.TryGetValue((sourceCurrency.ToString(), targetCurrency.ToString()), out var rate))
-                return Result.Ok<decimal, ProblemDetails>(rate);
+                return Result.Success<decimal, ProblemDetails>(rate);
 
             var today = DateTime.Today;
             var storedRate = await _context.CurrencyRates
@@ -84,7 +84,7 @@ namespace HappyTravel.CurrencyConverterApi.Services
             return storedRate.Equals(default)
                 ? ProblemDetailsBuilder.FailAndLogNoQuoteFound<decimal>(_logger,
                     sourceCurrency.ToString() + targetCurrency)
-                : Result.Ok<decimal, ProblemDetails>(storedRate);
+                : Result.Success<decimal, ProblemDetails>(storedRate);
         }
 
 
@@ -107,7 +107,7 @@ namespace HappyTravel.CurrencyConverterApi.Services
 
                 var result = serializer.Deserialize<CurrencyLayerResponse>(jsonTextReader);
                 return result.IsSuccessful
-                    ? Result.Ok<Dictionary<string, decimal>, ProblemDetails>(result.Quotes)
+                    ? Result.Success<Dictionary<string, decimal>, ProblemDetails>(result.Quotes)
                     : ProblemDetailsBuilder.Fail<Dictionary<string, decimal>>("Rate Service Exception",
                         result.Error.Message);
             }
@@ -161,7 +161,7 @@ namespace HappyTravel.CurrencyConverterApi.Services
             _context.CurrencyRates.AddRange(ratesToStore);
             await _context.SaveChangesAsync();
 
-            return Result.Ok<Dictionary<(string, string), decimal>, ProblemDetails>(rates);
+            return Result.Success<Dictionary<(string, string), decimal>, ProblemDetails>(rates);
         }
 
 
@@ -181,7 +181,7 @@ namespace HappyTravel.CurrencyConverterApi.Services
                 results.Add((source, target), value);
             }
 
-            return Result.Ok<Dictionary<(string, string), decimal>, ProblemDetails>(results);
+            return Result.Success<Dictionary<(string, string), decimal>, ProblemDetails>(results);
         }
 
         private async ValueTask<decimal?> GetDefaultRate(string source, string target)
