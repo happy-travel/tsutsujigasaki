@@ -9,9 +9,6 @@ namespace HappyTravel.CurrencyConverterTests
 {
     public class ConverterTests : IClassFixture<ConverterTestsFixture>
     {
-        private readonly ConverterTestsFixture _fixture;
-
-
         public ConverterTests(ConverterTestsFixture fixture)
         {
             _fixture = fixture;
@@ -21,7 +18,7 @@ namespace HappyTravel.CurrencyConverterTests
         [Theory]
         [InlineData(Currencies.AED, Currencies.AED)]
         [InlineData(Currencies.USD, Currencies.USD)]
-        public void Convert_should_throws_exception_when_source_and_target_currencies_are_same(Currencies sourceCurrency, Currencies targetCurrency)
+        public void Convert_should_throw_exception_when_source_and_target_currencies_are_same(Currencies sourceCurrency, Currencies targetCurrency)
         {
             var factory = new CurrencyConverterFactory(_fixture.ExceptionalPairs);
 
@@ -44,7 +41,7 @@ namespace HappyTravel.CurrencyConverterTests
             Assert.Equal(targetCurrency, result.Currency);
         }
 
-        
+
         [Theory]
         [InlineData(0, 0)]
         [InlineData(1, 1)]
@@ -60,7 +57,10 @@ namespace HappyTravel.CurrencyConverterTests
             Assert.Equal(expected, result.Amount);
         }
 
-        
+
+        private readonly ConverterTestsFixture _fixture;
+
+
         [Fact]
         public void Convert_should_skip_same_values()
         {
@@ -79,7 +79,7 @@ namespace HappyTravel.CurrencyConverterTests
             Assert.Equal(2, results.Count);
         }
 
-        
+
         [Fact]
         public void Convert_should_throw_exception_when_different_source_currency_had_passed_into_instance()
         {
@@ -87,7 +87,7 @@ namespace HappyTravel.CurrencyConverterTests
             var converter = factory.Create(1m, Currencies.EUR, Currencies.USD);
 
             var amount = new MoneyAmount(1m, Currencies.AED);
-            
+
             Assert.Throws<ArgumentException>(() => converter.Convert(amount));
         }
 

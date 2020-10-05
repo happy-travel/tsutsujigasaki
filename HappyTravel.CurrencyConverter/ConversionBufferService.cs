@@ -16,12 +16,5 @@ namespace HappyTravel.CurrencyConverter
 
 
         private readonly ConversionBufferOptions _options;
-        /*private static readonly Dictionary<(Currencies, Currencies), decimal> ExceptionalPairs = new Dictionary<(Currencies, Currencies), decimal>
-        {
-            {(Currencies.AED, Currencies.USD), decimal.Zero},
-            {(Currencies.USD, Currencies.AED), decimal.Zero}
-        };
-
-        private const decimal DefaultBuffer = 0.005m;*/
     }
 }
