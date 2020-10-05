@@ -9,12 +9,8 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
 ARG GITHUB_TOKEN
 WORKDIR /src
-COPY *.sln ./
-COPY HappyTravel.CurrencyConverterApi/HappyTravel.CurrencyConverterApi.csproj HappyTravel.CurrencyConverterApi/
-COPY HappyTravel.CurrencyConverterApiTests/HappyTravel.CurrencyConverterApiTests.csproj HappyTravel.CurrencyConverterApiTests/
-COPY nuget.config ./
-RUN dotnet restore
 COPY . .
+RUN dotnet restore
 WORKDIR /src/HappyTravel.CurrencyConverterApiTests
 RUN dotnet test
 WORKDIR /src/HappyTravel.CurrencyConverterApi
