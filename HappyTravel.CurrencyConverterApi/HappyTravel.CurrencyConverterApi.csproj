@@ -55,5 +55,11 @@
     <ProjectReference Include="..\HappyTravel.CurrencyConverter\HappyTravel.CurrencyConverter.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="HappyTravel.CurrencyConverterApi.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 
 </Project>
