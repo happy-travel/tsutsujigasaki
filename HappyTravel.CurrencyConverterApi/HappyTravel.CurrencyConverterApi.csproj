@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <LangVersion>8.0</LangVersion>
+    <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>default</LangVersion>
     <Nullable>enable</Nullable>
     <UserSecretsId>978bf5d9-05a6-482a-9759-2485abb349b9</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
@@ -21,38 +21,35 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="HappyTravel.CurrencyConverter" Version="1.0.0" />
     <PackageReference Include="HappyTravel.ErrorHandling" Version="1.0.0" />
-    <PackageReference Include="HappyTravel.Money" Version="0.0.3.1" />
-    <PackageReference Include="HappyTravel.StdOutLogger" Version="1.0.15" />
+    <PackageReference Include="HappyTravel.Money" Version="1.0.1" />
+    <PackageReference Include="HappyTravel.StdOutLogger" Version="1.0.16" />
     <PackageReference Include="HappyTravel.VaultClient" Version="1.0.5" />
-    <PackageReference Include="CSharpFunctionalExtensions" Version="2.11.8" />
-    <PackageReference Include="FloxDc.CacheFlow" Version="1.7.0" />
-    <PackageReference Include="FloxDc.CacheFlow.MessagePack" Version="1.7.0" />
+    <PackageReference Include="CSharpFunctionalExtensions" Version="2.12.2" />
+    <PackageReference Include="FloxDc.CacheFlow" Version="1.8.0" />
+    <PackageReference Include="FloxDc.CacheFlow.MessagePack" Version="1.8.0" />
     <PackageReference Include="MessagePack.CSharpFunctionalExtensions" Version="1.0.0-beta" />
     <PackageReference Include="MessagePack.ProblemDetails" Version="1.0.0-beta" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="4.1.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.8">
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="4.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="3.1.8" />
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="3.1.8" />
-    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="5.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.8" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.4" />
     <PackageReference Include="Sentry.AspNetCore" Version="2.1.6" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
-    <PackageReference Include="OpenTelemetry" Version="0.6.0-beta.4" />
-    <PackageReference Include="OpenTelemetry.Exporter.Jaeger" Version="0.6.0-beta.4" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="0.6.0-beta.4" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="0.6.0-beta.4" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="0.6.0-beta.4" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.StackExchangeRedis" Version="0.6.0-beta.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\HappyTravel.CurrencyConverter\HappyTravel.CurrencyConverter.csproj" />
+    <PackageReference Include="OpenTelemetry" Version="0.8.0-beta.23" />
+    <PackageReference Include="OpenTelemetry.Exporter.Jaeger" Version="0.8.0-beta.23" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="0.8.0-beta.23" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="0.8.0-beta.23" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="0.8.0-beta.23" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.StackExchangeRedis" Version="0.8.0-beta.23" />
   </ItemGroup>
 
   <ItemGroup>

@@ -145,7 +145,6 @@ namespace HappyTravel.CurrencyConverterApi
                 options.RoutePrefix = string.Empty;
             });
 
-
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseEndpoints(endpoints =>
@@ -177,7 +176,7 @@ namespace HappyTravel.CurrencyConverterApi
         }
 
 
-        private IServiceCollection AddTracing(IServiceCollection services, IWebHostEnvironment environment, IConfiguration configuration)
+        private static IServiceCollection AddTracing(IServiceCollection services, IWebHostEnvironment environment, IConfiguration configuration)
         {
             string agentHost;
             int agentPort;
@@ -195,17 +194,17 @@ namespace HappyTravel.CurrencyConverterApi
             var serviceName = $"{environment.ApplicationName}-{environment.EnvironmentName}";
             services.AddOpenTelemetryTracing(builder =>
             {
-                builder.AddAspNetCoreInstrumentation()
+                builder
+                    .SetResource(Resources.CreateServiceResource(serviceName))
+                    .SetSampler(new AlwaysOnSampler())
+                    .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    //.AddCacheFlowInstrumentation()
                     .AddJaegerExporter(options =>
                     {
                         options.ServiceName = serviceName;
                         options.AgentHost = agentHost;
                         options.AgentPort = agentPort;
-                    })
-                    .SetResource(Resources.CreateServiceResource(serviceName))
-                    .SetSampler(new AlwaysOnSampler());
+                    });
             });
 
             return services;
