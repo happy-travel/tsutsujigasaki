@@ -195,13 +195,12 @@ namespace HappyTravel.CurrencyConverterApi
             services.AddOpenTelemetryTracing(builder =>
             {
                 builder
-                    .SetResource(Resources.CreateServiceResource(serviceName))
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName))
                     .SetSampler(new AlwaysOnSampler())
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddJaegerExporter(options =>
                     {
-                        options.ServiceName = serviceName;
                         options.AgentHost = agentHost;
                         options.AgentPort = agentPort;
                     });
