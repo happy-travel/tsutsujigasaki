@@ -138,6 +138,15 @@ namespace HappyTravel.CurrencyConverterApi.Services
         }
 
 
+        private static TimeSpan GetTimeSpanToNextMinute()
+        {
+            var now = DateTime.UtcNow;
+            var nextMinute = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0).AddMinutes(1);
+
+            return nextMinute - now;
+        }
+
+
         private async Task<Result<Dictionary<(string, string), decimal>, ProblemDetails>> SetRates(
             Dictionary<(string, string), decimal> rates)
         {
@@ -184,16 +193,26 @@ namespace HappyTravel.CurrencyConverterApi.Services
             return Result.Success<Dictionary<(string, string), decimal>, ProblemDetails>(results);
         }
 
+
         private async ValueTask<decimal?> GetDefaultRate(string source, string target)
         {
-            if (_defaultRates == null || !_defaultRates.Any())
-                _defaultRates = await _context.DefaultCurrencyRates.ToDictionaryAsync(
-                    r => (r.Source.ToString(), r.Target.ToString()), r => r.Rate);
+            var cacheKey = _cache.BuildKey(nameof(RateService), nameof(GetDefaultRate), source, target);
+            if (_cache.TryGetValue(cacheKey, out decimal result, GetTimeSpanToNextMinute()))
+                return result;
 
-            if (_defaultRates.TryGetValue((source, target), out var defaultRate))
-                return defaultRate;
+            var today = DateTime.Today;
+            var storedDefaultRate = await _context.DefaultCurrencyRates
+                .Where(r => r.Source.ToString() == source && r.Target.ToString() == target)
+                .Where(r => today <= r.ValidFrom)
+                .OrderByDescending(r => r.ValidFrom)
+                .Select(r => r.Rate)
+                .FirstOrDefaultAsync();
 
-            return null;
+            if (storedDefaultRate.Equals(default))
+                return null;
+            
+            await _cache.SetAsync(cacheKey, storedDefaultRate, GetTimeSpanToNextMinute());
+            return storedDefaultRate;
         }
 
 
