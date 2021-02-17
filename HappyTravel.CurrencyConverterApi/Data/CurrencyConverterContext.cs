@@ -41,6 +41,7 @@ namespace HappyTravel.CurrencyConverterApi.Data
                 rate.Property(r => r.Target).IsRequired();
                 rate.Property(r => r.ValidFrom)
                     .HasColumnType("timestamp")
+                    .HasDefaultValueSql("current_timestamp(0)")
                     .IsRequired();
             });
         }
