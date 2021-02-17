@@ -1,3 +1,4 @@
+using System;
 using HappyTravel.Money.Enums;
 
 namespace HappyTravel.CurrencyConverterApi.Data
@@ -7,5 +8,6 @@ namespace HappyTravel.CurrencyConverterApi.Data
         public decimal Rate { get; set; }
         public Currencies Source { get; set; }
         public Currencies Target { get; set; }
+        public DateTime ValidFrom { get; set; }
     }
 }

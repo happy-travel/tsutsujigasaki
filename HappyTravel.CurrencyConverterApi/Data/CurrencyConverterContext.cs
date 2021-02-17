@@ -33,12 +33,16 @@ namespace HappyTravel.CurrencyConverterApi.Data
 
             builder.Entity<DefaultCurrencyRate>(rate =>
             {
-                rate.HasKey(r => new {SourceCurrency = r.Source, TargetCurrency = r.Target});
+                rate.HasKey(r => new {SourceCurrency = r.Source, TargetCurrency = r.Target, r.ValidFrom});
                 rate.Property(r => r.Rate)
                     .HasColumnType("numeric")
                     .IsRequired();
                 rate.Property(r => r.Source).IsRequired();
                 rate.Property(r => r.Target).IsRequired();
+                rate.Property(r => r.ValidFrom)
+                    .HasColumnType("timestamp")
+                    .HasDefaultValueSql("current_timestamp(0)")
+                    .IsRequired();
             });
         }
 
