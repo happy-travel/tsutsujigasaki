@@ -76,6 +76,7 @@ namespace HappyTravel.CurrencyConverterApi.Services
             var today = DateTime.Today;
             var storedRate = await _context.CurrencyRates
                 .Where(r => r.Source == sourceCurrency.ToString() && r.Target == targetCurrency.ToString())
+                //TODO Clarify this condition
                 .Where(r => today <= r.ValidFrom)
                 .OrderByDescending(r => r.ValidFrom)
                 .Select(r => r.Rate)
@@ -199,11 +200,17 @@ namespace HappyTravel.CurrencyConverterApi.Services
             var cacheKey = _cache.BuildKey(nameof(RateService), nameof(GetDefaultRate), source, target);
             if (_cache.TryGetValue(cacheKey, out decimal result, GetTimeSpanToNextMinute()))
                 return result;
-
-            var today = DateTime.Today;
+            
+            //TODO Need to change the type of Source and Target columns to text in DefaultCurrencyRates table 
+            if (!Enum.TryParse<Currencies>(source, out var sourceValue) ||
+                !Enum.TryParse<Currencies>(target, out var targetValue))
+                return null;
+            
+            //TODO Clarify the moment. Related with Get_should_not_use_outdated_default_rate test.
+            //var today = DateTime.Today;
             var storedDefaultRate = await _context.DefaultCurrencyRates
-                .Where(r => r.Source.ToString() == source && r.Target.ToString() == target)
-                .Where(r => today <= r.ValidFrom)
+                .Where(r => r.Source.Equals(sourceValue) && r.Target.Equals(targetValue))
+                //.Where(r => today <= r.ValidFrom)
                 .OrderByDescending(r => r.ValidFrom)
                 .Select(r => r.Rate)
                 .FirstOrDefaultAsync();
