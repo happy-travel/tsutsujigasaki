@@ -199,10 +199,14 @@ namespace HappyTravel.CurrencyConverterApi.Services
             var cacheKey = _cache.BuildKey(nameof(RateService), nameof(GetDefaultRate), source, target);
             if (_cache.TryGetValue(cacheKey, out decimal result, GetTimeSpanToNextMinute()))
                 return result;
-
+            
+            //todo Need to change the type of Source and Target columns to text in DefaultCurrencyRates table 
+            var sourceValue = Enum.Parse<Currencies>(source);
+            var targetValue = Enum.Parse<Currencies>(target);
+            
             var today = DateTime.Today;
             var storedDefaultRate = await _context.DefaultCurrencyRates
-                .Where(r => r.Source.ToString() == source && r.Target.ToString() == target)
+                .Where(r => r.Source == sourceValue && r.Target == targetValue)
                 .Where(r => today <= r.ValidFrom)
                 .OrderByDescending(r => r.ValidFrom)
                 .Select(r => r.Rate)
