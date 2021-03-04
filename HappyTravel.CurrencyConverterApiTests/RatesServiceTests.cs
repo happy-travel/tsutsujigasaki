@@ -357,7 +357,7 @@ namespace HappyTravel.CurrencyConverterApiTests
 
             var defaultCurrencyRatesMock = new List<DefaultCurrencyRate>
             {
-                new DefaultCurrencyRate {Rate = defaultRate, Source = Currencies.USD, Target = Currencies.AED, ValidFrom = DateTime.UtcNow}
+                new DefaultCurrencyRate {Rate = defaultRate, Source = "USD", Target = "AED", ValidFrom = DateTime.UtcNow}
             }.AsQueryable().BuildMockDbSet();
 
             var contextMock = new Mock<CurrencyConverterContext>();
@@ -393,8 +393,8 @@ namespace HappyTravel.CurrencyConverterApiTests
 
             var defaultCurrencyRatesMock = new List<DefaultCurrencyRate>
             {
-                new DefaultCurrencyRate {Rate = defaultRate + 0.1m, Source = Currencies.USD, Target = Currencies.AED, ValidFrom = DateTime.UtcNow.AddMinutes(-10)},
-                new DefaultCurrencyRate {Rate = defaultRate, Source = Currencies.USD, Target = Currencies.AED, ValidFrom = DateTime.UtcNow}
+                new DefaultCurrencyRate {Rate = defaultRate + 0.1m, Source = "USD", Target = "AED", ValidFrom = DateTime.UtcNow.AddMinutes(-10)},
+                new DefaultCurrencyRate {Rate = defaultRate, Source = "USD", Target = "AED", ValidFrom = DateTime.UtcNow}
             }.AsQueryable().BuildMockDbSet();
 
             var contextMock = new Mock<CurrencyConverterContext>();
