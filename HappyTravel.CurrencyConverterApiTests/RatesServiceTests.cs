@@ -415,40 +415,6 @@ namespace HappyTravel.CurrencyConverterApiTests
             Assert.Equal(defaultRate, returnedValue);
         }
 
-        //TODO Clarify this test. Related with todo in RateService->GetDefaultRate
-/* 
-        [Fact]
-        public async Task Get_should_not_use_outdated_default_rate()
-        {
-            var defaultRate = 3.668m;
-            var httpRate = 3.672982m;
-
-            var currenciesList = new List<CurrencyRate>();
-            var currencyRatesMock = currenciesList.AsQueryable().BuildMockDbSet();
-
-            var defaultCurrencyRatesMock = new List<DefaultCurrencyRate>
-            {
-                new DefaultCurrencyRate {Rate = defaultRate, Source = Currencies.USD, Target = Currencies.AED, ValidFrom = DateTime.UtcNow.AddDays(-2)}
-            }.AsQueryable().BuildMockDbSet();
-
-            var contextMock = new Mock<CurrencyConverterContext>();
-            contextMock.Setup(m => m.CurrencyRates)
-                .Returns(currencyRatesMock.Object);
-            contextMock.Setup(m => m.DefaultCurrencyRates)
-                .Returns(defaultCurrencyRatesMock.Object);
-            currencyRatesMock.Setup(d => d.AddRange(It.IsAny<IEnumerable<CurrencyRate>>()))
-                .Callback<IEnumerable<CurrencyRate>>(currenciesList.AddRange);
-            contextMock.Setup(m => m.SaveChangesAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(0);
-
-            var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(), _options,
-                contextMock.Object);
-
-            var (isSuccess, _, returnedValue) = await service.Get(Currencies.USD, Currencies.AED);
-
-            Assert.Equal(httpRate, returnedValue);
-        }
-*/
 
         private static IDoubleFlow GetCache()
         {

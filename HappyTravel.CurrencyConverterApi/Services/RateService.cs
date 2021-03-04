@@ -206,11 +206,8 @@ namespace HappyTravel.CurrencyConverterApi.Services
                 !Enum.TryParse<Currencies>(target, out var targetValue))
                 return null;
             
-            //TODO Clarify the moment. Related with Get_should_not_use_outdated_default_rate test.
-            //var today = DateTime.Today;
             var storedDefaultRate = await _context.DefaultCurrencyRates
                 .Where(r => r.Source.Equals(sourceValue) && r.Target.Equals(targetValue))
-                //.Where(r => today <= r.ValidFrom)
                 .OrderByDescending(r => r.ValidFrom)
                 .Select(r => r.Rate)
                 .FirstOrDefaultAsync();
