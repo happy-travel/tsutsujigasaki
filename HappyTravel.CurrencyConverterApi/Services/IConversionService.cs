@@ -5,7 +5,7 @@ using HappyTravel.Money.Enums;
 using HappyTravel.Money.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HappyTravel.CurrencyConverterApi.Services
+namespace HappyTravel.Tsutsujigasaki.Api.Services
 {
     public interface IConversionService
     {

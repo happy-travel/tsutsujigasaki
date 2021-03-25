@@ -1,8 +1,8 @@
 ﻿using System;
-using HappyTravel.CurrencyConverterApi.Services;
+using HappyTravel.Tsutsujigasaki.Api.Services;
 using Microsoft.Extensions.Logging;
 
-namespace HappyTravel.CurrencyConverterApi.Infrastructure.Logging
+namespace HappyTravel.Tsutsujigasaki.Api.Infrastructure.Logging
 {
     internal static class LoggerExtensions
     {

@@ -8,9 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using FloxDc.CacheFlow;
-using HappyTravel.CurrencyConverterApi.Data;
-using HappyTravel.CurrencyConverterApi.Infrastructure;
-using HappyTravel.CurrencyConverterApi.Services;
+using HappyTravel.Tsutsujigasaki.Api.Data;
+using HappyTravel.Tsutsujigasaki.Api.Infrastructure;
+using HappyTravel.Tsutsujigasaki.Api.Services;
 using HappyTravel.Money.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -21,7 +21,7 @@ using Moq.Protected;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace HappyTravel.CurrencyConverterApiTests
+namespace HappyTravel.Tsutsujigasaki.UnitTests
 {
     public class RatesServiceTests
     {

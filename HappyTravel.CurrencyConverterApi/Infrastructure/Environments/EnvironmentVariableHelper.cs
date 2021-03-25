@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
-namespace HappyTravel.CurrencyConverterApi.Infrastructure.Environments
+namespace HappyTravel.Tsutsujigasaki.Api.Infrastructure.Environments
 {
     public static class EnvironmentVariableHelper
     {

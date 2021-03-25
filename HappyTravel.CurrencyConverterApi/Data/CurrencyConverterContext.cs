@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 
-namespace HappyTravel.CurrencyConverterApi.Data
+namespace HappyTravel.Tsutsujigasaki.Api.Data
 {
 #nullable enable
     public class CurrencyConverterContext : DbContext

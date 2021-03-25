@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using FloxDc.CacheFlow;
 using FloxDc.CacheFlow.Extensions;
-using HappyTravel.CurrencyConverterApi.Data;
-using HappyTravel.CurrencyConverterApi.Infrastructure;
-using HappyTravel.CurrencyConverterApi.Infrastructure.Constants;
-using HappyTravel.CurrencyConverterApi.Infrastructure.Logging;
-using HappyTravel.CurrencyConverterApi.Models;
+using HappyTravel.Tsutsujigasaki.Api.Data;
+using HappyTravel.Tsutsujigasaki.Api.Infrastructure;
+using HappyTravel.Tsutsujigasaki.Api.Infrastructure.Constants;
+using HappyTravel.Tsutsujigasaki.Api.Infrastructure.Logging;
+using HappyTravel.Tsutsujigasaki.Api.Models;
 using HappyTravel.Money.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
-namespace HappyTravel.CurrencyConverterApi.Services
+namespace HappyTravel.Tsutsujigasaki.Api.Services
 {
     public class RateService : IRateService
     {

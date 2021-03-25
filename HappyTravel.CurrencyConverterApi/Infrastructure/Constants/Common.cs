@@ -1,4 +1,4 @@
-﻿namespace HappyTravel.CurrencyConverterApi.Infrastructure.Constants
+﻿namespace HappyTravel.Tsutsujigasaki.Api.Infrastructure.Constants
 {
     public static class Common
     {

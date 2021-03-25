@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using CSharpFunctionalExtensions;
-using HappyTravel.CurrencyConverterApi.Infrastructure.Constants;
-using HappyTravel.CurrencyConverterApi.Infrastructure.Logging;
+using HappyTravel.Tsutsujigasaki.Api.Infrastructure.Constants;
+using HappyTravel.Tsutsujigasaki.Api.Infrastructure.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace HappyTravel.CurrencyConverterApi.Infrastructure
+namespace HappyTravel.Tsutsujigasaki.Api.Infrastructure
 {
     internal static class ProblemDetailsBuilder
     {

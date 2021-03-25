@@ -3,12 +3,12 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using HappyTravel.CurrencyConverterApi.Services;
+using HappyTravel.Tsutsujigasaki.Api.Services;
 using HappyTravel.Money.Enums;
 using HappyTravel.Money.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HappyTravel.CurrencyConverterApi.Controllers
+namespace HappyTravel.Tsutsujigasaki.Api.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]

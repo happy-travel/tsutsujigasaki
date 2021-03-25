@@ -6,8 +6,6 @@
     <Nullable>enable</Nullable>
     <UserSecretsId>978bf5d9-05a6-482a-9759-2485abb349b9</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <AssemblyName>HappyTravel.CurrencyConverterApi</AssemblyName>
-    <RootNamespace>HappyTravel.CurrencyConverterApi</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

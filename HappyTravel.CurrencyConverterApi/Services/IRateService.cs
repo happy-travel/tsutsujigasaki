@@ -3,7 +3,7 @@ using CSharpFunctionalExtensions;
 using HappyTravel.Money.Enums;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HappyTravel.CurrencyConverterApi.Services
+namespace HappyTravel.Tsutsujigasaki.Api.Services
 {
     public interface IRateService
     {

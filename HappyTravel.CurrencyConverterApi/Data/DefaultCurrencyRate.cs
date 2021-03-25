@@ -1,6 +1,6 @@
 using System;
 
-namespace HappyTravel.CurrencyConverterApi.Data
+namespace HappyTravel.Tsutsujigasaki.Api.Data
 {
     public class DefaultCurrencyRate
     {

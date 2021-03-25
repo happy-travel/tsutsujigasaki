@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace HappyTravel.CurrencyConverterApi.Migrations
+namespace HappyTravel.Tsutsujigasaki.Api.Migrations
 {
     public partial class AddDefaultRatesHistory : Migration
     {

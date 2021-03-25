@@ -8,12 +8,12 @@ using FloxDc.CacheFlow;
 using FloxDc.CacheFlow.Extensions;
 using HappyTravel.CurrencyConverter.Extensions;
 using HappyTravel.CurrencyConverter.Infrastructure;
-using HappyTravel.CurrencyConverterApi.Conventions.Serialization;
-using HappyTravel.CurrencyConverterApi.Data;
-using HappyTravel.CurrencyConverterApi.Infrastructure;
-using HappyTravel.CurrencyConverterApi.Infrastructure.Constants;
-using HappyTravel.CurrencyConverterApi.Infrastructure.Environments;
-using HappyTravel.CurrencyConverterApi.Services;
+using HappyTravel.Tsutsujigasaki.Api.Conventions.Serialization;
+using HappyTravel.Tsutsujigasaki.Api.Data;
+using HappyTravel.Tsutsujigasaki.Api.Infrastructure;
+using HappyTravel.Tsutsujigasaki.Api.Infrastructure.Constants;
+using HappyTravel.Tsutsujigasaki.Api.Infrastructure.Environments;
+using HappyTravel.Tsutsujigasaki.Api.Services;
 using HappyTravel.ErrorHandling.Extensions;
 using HappyTravel.Money.Enums;
 using HappyTravel.VaultClient;
@@ -36,7 +36,7 @@ using OpenTelemetry.Trace;
 using Polly;
 using Polly.Extensions.Http;
 
-namespace HappyTravel.CurrencyConverterApi
+namespace HappyTravel.Tsutsujigasaki.Api
 {
     public class Startup
     {

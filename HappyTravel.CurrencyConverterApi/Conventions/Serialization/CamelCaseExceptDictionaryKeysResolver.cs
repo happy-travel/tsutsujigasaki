@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json.Serialization;
 
-namespace HappyTravel.CurrencyConverterApi.Conventions.Serialization
+namespace HappyTravel.Tsutsujigasaki.Api.Conventions.Serialization
 {
     // https://stackoverflow.com/questions/24143149/keep-casing-when-serializing-dictionaries
     public class CamelCaseExceptDictionaryKeysResolver: CamelCasePropertyNamesContractResolver
