@@ -63,7 +63,7 @@ steps:
     HTDC_TSUTSUJIGASAKI_SENTRY_ENDPOINT:
       from_secret: SENTRY_DEV_ENDPOINT
   commands:
-    - cd HappyTravel.CurrencyConverterApi
+    - cd HappyTravel.Tsutsujigasaki.Api
     - dotnet tool restore
     - dotnet ef database update
 
@@ -219,7 +219,7 @@ steps:
     HTDC_TSUTSUJIGASAKI_SENTRY_ENDPOINT:
       from_secret: SENTRY_PRODUCTION_ENDPOINT
   commands:
-    - cd HappyTravel.CurrencyConverterApi
+    - cd HappyTravel.Tsutsujigasaki.Api
     - dotnet tool restore
     - dotnet ef database update
   

@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HappyTravel.CurrencyConverterApi\HappyTravel.Tsutsujigasaki.Api.csproj" />
+    <ProjectReference Include="..\HappyTravel.Tsutsujigasaki.Api\HappyTravel.Tsutsujigasaki.Api.csproj" />
   </ItemGroup>
 
 </Project>
