@@ -1,4 +1,4 @@
-﻿namespace HappyTravel.CurrencyConverterApi.Infrastructure
+﻿namespace HappyTravel.Tsutsujigasaki.Api.Infrastructure
 {
     #nullable disable
     public class CurrencyLayerOptions

@@ -1,4 +1,4 @@
-﻿namespace HappyTravel.CurrencyConverterApi.Infrastructure.Logging
+﻿namespace HappyTravel.Tsutsujigasaki.Api.Infrastructure.Logging
 {
     public enum LoggerEvents
     {

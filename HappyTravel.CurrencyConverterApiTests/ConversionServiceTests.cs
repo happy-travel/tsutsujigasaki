@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using HappyTravel.CurrencyConverterApi.Services;
+using HappyTravel.Tsutsujigasaki.Api.Services;
 using HappyTravel.Money.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
-namespace HappyTravel.CurrencyConverterApiTests
+namespace HappyTravel.Tsutsujigasaki.UnitTests
 {
     public class ConversionServiceTests : IClassFixture<ConversionServiceTestsFixture>
     {

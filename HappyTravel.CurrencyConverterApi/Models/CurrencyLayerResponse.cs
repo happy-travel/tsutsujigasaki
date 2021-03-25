@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace HappyTravel.CurrencyConverterApi.Models
+namespace HappyTravel.Tsutsujigasaki.Api.Models
 {
     #nullable disable
     public readonly struct CurrencyLayerResponse

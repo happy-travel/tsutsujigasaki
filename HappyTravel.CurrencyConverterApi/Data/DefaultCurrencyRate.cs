@@ -1,6 +1,6 @@
 using HappyTravel.Money.Enums;
 
-namespace HappyTravel.CurrencyConverterApi.Data
+namespace HappyTravel.Tsutsujigasaki.Api.Data
 {
     public class DefaultCurrencyRate
     {

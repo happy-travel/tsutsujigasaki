@@ -1,12 +1,12 @@
-using HappyTravel.CurrencyConverterApi.Infrastructure.Constants;
-using HappyTravel.CurrencyConverterApi.Infrastructure.Environments;
+using HappyTravel.Tsutsujigasaki.Api.Infrastructure.Constants;
+using HappyTravel.Tsutsujigasaki.Api.Infrastructure.Environments;
 using HappyTravel.StdOutLogger.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace HappyTravel.CurrencyConverterApi
+namespace HappyTravel.Tsutsujigasaki.Api
 {
     public class Program
     {

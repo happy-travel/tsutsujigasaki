@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.CurrencyConverter;
-using HappyTravel.CurrencyConverterApi.Infrastructure;
+using HappyTravel.Tsutsujigasaki.Api.Infrastructure;
 using HappyTravel.Money.Enums;
 using HappyTravel.Money.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace HappyTravel.CurrencyConverterApi.Services
+namespace HappyTravel.Tsutsujigasaki.Api.Services
 {
     public class ConversionService : IConversionService
     {

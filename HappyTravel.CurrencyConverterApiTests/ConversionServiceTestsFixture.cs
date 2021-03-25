@@ -4,7 +4,7 @@ using HappyTravel.CurrencyConverter;
 using HappyTravel.CurrencyConverter.Infrastructure;
 using HappyTravel.Money.Enums;
 
-namespace HappyTravel.CurrencyConverterApiTests
+namespace HappyTravel.Tsutsujigasaki.UnitTests
 {
     public class ConversionServiceTestsFixture : IDisposable
     {
