@@ -9,12 +9,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>HappyTravel.CurrencyConverterApi.xml</DocumentationFile>
+    <DocumentationFile>HappyTravel.Tsutsujigasaki.Api.xml</DocumentationFile>
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>HappyTravel.CurrencyConverter.xml</DocumentationFile>
+    <DocumentationFile>HappyTravel.Tsutsujigasaki.Api.xml</DocumentationFile>
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
 
@@ -51,7 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="HappyTravel.CurrencyConverterApi.xml">
+    <None Update="HappyTravel.Tsutsujigasaki.Api.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
