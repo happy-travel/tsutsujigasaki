@@ -11,9 +11,9 @@ ARG GITHUB_TOKEN
 WORKDIR /src
 COPY . .
 RUN dotnet restore
-WORKDIR /src/HappyTravel.CurrencyConverterApiTests
+WORKDIR /src/HappyTravel.Tsutsujigasaki.UnitTests
 RUN dotnet test
-WORKDIR /src/HappyTravel.CurrencyConverterApi
+WORKDIR /src/HappyTravel.Tsutsujigasaki.Api
 RUN dotnet build -c Release -o /app
 
 FROM build AS publish
@@ -26,4 +26,4 @@ COPY --from=publish /app .
 
 HEALTHCHECK --interval=6s --timeout=10s --retries=3 CMD curl -sS 127.0.0.1/health || exit 1
 
-ENTRYPOINT ["dotnet", "HappyTravel.CurrencyConverterApi.dll"]
+ENTRYPOINT ["dotnet", "HappyTravel.Tsutsujigasaki.Api.dll"]
