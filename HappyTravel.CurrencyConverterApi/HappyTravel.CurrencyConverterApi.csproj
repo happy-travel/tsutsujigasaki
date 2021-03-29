@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="HappyTravel.CurrencyConverter" Version="1.0.0" />
+    <PackageReference Include="HappyTravel.Diplomat.ConfigurationProvider" Version="1.4.0" />
     <PackageReference Include="HappyTravel.ErrorHandling" Version="1.0.0" />
     <PackageReference Include="HappyTravel.Money" Version="1.1.0" />
     <PackageReference Include="HappyTravel.StdOutLogger" Version="1.0.18" />

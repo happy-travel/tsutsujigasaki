@@ -87,7 +87,7 @@ namespace HappyTravel.CurrencyConverterApi
                 .WithCompression(MessagePackCompression.Lz4BlockArray);
 
             services.AddMemoryCache()
-                .AddStackExchangeRedisCache(options => { options.Configuration = EnvironmentVariableHelper.Get("Redis:Endpoint", Configuration); })
+                .AddStackExchangeRedisCache(options => { options.Configuration = Configuration["Redis:Endpoint"]; })
                 .AddDoubleFlow()
                 .AddCacheFlowMessagePackSerialization(messagePackOptions, StandardResolver.Instance, NativeDecimalResolver.Instance,
                     CSharpFunctionalExtensionsFormatResolver.Instance, ProblemDetailsFormatResolver.Instance)
@@ -97,22 +97,9 @@ namespace HappyTravel.CurrencyConverterApi
             services.AddTransient<IRateService, RateService>();
             services.AddTransient<IConversionService, ConversionService>();
             services.AddProblemDetailsFactory();
-            //TODO: move to Consul when it will be ready
-            services.AddCurrencyConversionFactory(new List<BufferPair>
-            {
-                new BufferPair
-                {
-                    BufferValue = decimal.Zero,
-                    SourceCurrency = Currencies.AED,
-                    TargetCurrency = Currencies.USD
-                },
-                new BufferPair
-                {
-                    BufferValue = decimal.Zero,
-                    SourceCurrency = Currencies.USD,
-                    TargetCurrency = Currencies.AED
-                },
-            });
+            
+            var bufferPairs = Configuration.GetSection("BufferPairs").Get<List<BufferPair>>();
+            services.AddCurrencyConversionFactory(bufferPairs);
 
             services = AddTracing(services, _environment, Configuration);
 
@@ -178,19 +165,9 @@ namespace HappyTravel.CurrencyConverterApi
 
         private static IServiceCollection AddTracing(IServiceCollection services, IWebHostEnvironment environment, IConfiguration configuration)
         {
-            string agentHost;
-            int agentPort;
-            if (environment.IsLocal())
-            {
-                agentHost = configuration["Jaeger:AgentHost"];
-                agentPort = int.Parse(configuration["Jaeger:AgentPort"]);
-            }
-            else
-            {
-                agentHost = EnvironmentVariableHelper.Get("Jaeger:AgentHost", configuration);
-                agentPort = int.Parse(EnvironmentVariableHelper.Get("Jaeger:AgentPort", configuration));
-            }
-
+            var agentHost = configuration["Jaeger:AgentHost"];
+            var agentPort = int.Parse(configuration["Jaeger:AgentPort"]);
+           
             var serviceName = $"{environment.ApplicationName}-{environment.EnvironmentName}";
             services.AddOpenTelemetryTracing(builder =>
             {

@@ -1,5 +1,7 @@
+using System;
 using HappyTravel.CurrencyConverterApi.Infrastructure.Constants;
 using HappyTravel.CurrencyConverterApi.Infrastructure.Environments;
+using HappyTravel.Diplomat.ConfigurationProvider.Extensions;
 using HappyTravel.StdOutLogger.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -25,9 +27,15 @@ namespace HappyTravel.CurrencyConverterApi
                         .ConfigureAppConfiguration((context, builder) =>
                         {
                             var environment = context.HostingEnvironment;
+                            var environmentName = environment.EnvironmentName;
 
                             builder.AddJsonFile("appsettings.json", false, true)
-                                .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", true, true);
+                                .AddJsonFile($"appsettings.{environmentName}.json", true, true);
+                            builder.AddDiplomat(
+                                Environment.GetEnvironmentVariable("CONSUL_HTTP_ADDR"), 
+                                Environment.GetEnvironmentVariable("CONSUL_PATH") + "/" + environmentName,
+                               Environment.GetEnvironmentVariable("CONSUL_HTTP_TOKEN")
+                                );
                             builder.AddEnvironmentVariables();
                         })
                         .ConfigureLogging((context, builder) =>
