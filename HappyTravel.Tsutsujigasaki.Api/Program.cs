@@ -33,7 +33,7 @@ namespace HappyTravel.Tsutsujigasaki.Api
                                 .AddJsonFile($"appsettings.{environmentName}.json", true, true);
                             builder.AddDiplomat(
                                 Environment.GetEnvironmentVariable("CONSUL_HTTP_ADDR"), 
-                                Environment.GetEnvironmentVariable("CONSUL_PATH") + "/" + environmentName,
+                                $"tsutsujigasaki/{environmentName}",
                                 Environment.GetEnvironmentVariable("CONSUL_HTTP_TOKEN")
                             );
                             builder.AddEnvironmentVariables();
