@@ -11,7 +11,7 @@ trigger:
 
 steps:
 - name: Test application
-  image: mcr.microsoft.com/dotnet/sdk:5.0
+  image: mcr.microsoft.com/dotnet/sdk:5.0-focal
   environment:
     GITHUB_TOKEN:
       from_secret: GITHUB_TOKEN
@@ -19,6 +19,10 @@ steps:
       from_secret: VAULT_DEV_TOKEN
     HTDC_VAULT_ENDPOINT:
       from_secret: VAULT_DEV_ENDPOINT
+    CONSUL_HTTP_TOKEN:
+      from_secret: CONSUL_DEV_HTTP_TOKEN
+    CONSUL_HTTP_TOKEN:
+      from_secret: CONSUL_DEV_HTTP_TOKEN
   commands:
     - dotnet build -c Release
     - dotnet test -c Release
@@ -50,7 +54,7 @@ trigger:
 
 steps:
 - name: Run migrations
-  image: mcr.microsoft.com/dotnet/sdk:5.0
+  image: mcr.microsoft.com/dotnet/sdk:5.0-focal
   environment:
     GITHUB_TOKEN:
       from_secret: GITHUB_TOKEN
@@ -58,10 +62,15 @@ steps:
       from_secret: VAULT_DEV_TOKEN      
     HTDC_VAULT_ENDPOINT:
       from_secret: VAULT_DEV_ENDPOINT
+    CONSUL_HTTP_ADDR:
+      from_secret: CONSUL_DEV_HTTP_ADDR   
+    CONSUL_HTTP_TOKEN:
+      from_secret: CONSUL_DEV_HTTP_TOKEN
     JAEGER_AGENT_HOST: 'localhost'
     JAEGER_AGENT_PORT: '6831'
+    ASPNETCORE_ENVIRONMENT: 'Development'
     HTDC_TSUTSUJIGASAKI_SENTRY_ENDPOINT:
-      from_secret: SENTRY_DEV_ENDPOINT
+      from_secret: SENTRY_ENDPOINT
   commands:
     - cd HappyTravel.Tsutsujigasaki.Api
     - dotnet tool restore
@@ -87,18 +96,21 @@ steps:
       from_secret: TRAVEL_DOCKER_LOGIN
     password:
       from_secret: TRAVEL_DOCKER_PASSWORD
+    CONSUL_HTTP_TOKEN:
+      from_secret: CONSUL_DEV_HTTP_TOKEN      
     build_args_from_env:
       - GITHUB_TOKEN
       - VAULT_TOKEN
       - BUILD_VERSION
+      - CONSUL_HTTP_TOKEN
 
 - name: Deploy to DEV
   image: pelotech/drone-helm3:0.14.2
   settings:
     mode: upgrade
-    chart: ./Helm_v3/cc
+    chart: ./Helm/cc
     release: cc-dev
-    values_files: ["Helm_v3/cc/values_dev.yaml"]
+    values_files: ["Helm/cc/values_dev.yaml"]
     namespace: dev
     skip_tls_verify: true
     wait_for_upgrade: true
@@ -125,75 +137,6 @@ steps:
 ---
 kind: pipeline
 type: docker
-name: staging
-
-trigger:
-  branches:
-    - master
-  event:
-    - promote
-  target:
-    - staging
-
-steps:
-- name: Build docker image & push to repository
-  image: plugins/docker
-  environment:
-    GITHUB_TOKEN:
-      from_secret: GITHUB_TOKEN
-    VAULT_TOKEN:
-      from_secret: VAULT_STAGING_TOKEN
-    BUILD_VERSION: ${DRONE_COMMIT_SHA:0:7}
-  settings:
-    registry: registry.happytravel.com
-    repo: registry.happytravel.com/cc
-    tags:
-      - ${DRONE_COMMIT_SHA:0:7}
-      - ${DRONE_COMMIT_BRANCH}
-    force_tag: true
-    use_cache: true
-    username:
-      from_secret: TRAVEL_DOCKER_LOGIN
-    password:
-      from_secret: TRAVEL_DOCKER_PASSWORD
-    build_args_from_env:
-      - GITHUB_TOKEN
-      - VAULT_TOKEN
-      - BUILD_VERSION
-
-- name: Deploy to staging
-  image: pelotech/drone-helm3:0.14.2
-  settings:
-    mode: upgrade
-    chart: ./Helm_v3/cc
-    release: cc-staging
-    values_files: ["Helm_v3/cc/values_staging.yaml"]
-    namespace: staging
-    skip_tls_verify: true
-    wait_for_upgrade: true
-    values: image.tag=${DRONE_COMMIT_SHA:0:7}
-  environment:
-    KUBE_API_SERVER:
-      from_secret: KUBERNETES_STAGING_API
-    KUBE_TOKEN:
-      from_secret: KUBERNETES_STAGING_TOKEN
-
-- name: discord
-  pull: always
-  image: appleboy/drone-discord
-  settings:
-    avatar_url: https://www.pngitem.com/pimgs/m/86-868269_drone-logo-png-transparent-drone-ci-logo-png.png
-    message: "{{#success build.status}} ✅ Build #{{build.number}}\n`{{ build.event }}` of `{{repo.name}}` staging succeeded.\n Commit by {{commit.author}} on `{{commit.branch}}`:\n``` {{commit.message}} ```\n{{ build.link }} {{else}} ❌ Build #{{build.number}}\n`{{ build.event }}` of `{{repo.name}}` staging failed.\n Commit by {{commit.author}} on `{{commit.branch}}`:\n``` {{commit.message}} ```\n{{ build.link }} {{/success}}"
-    webhook_id:
-      from_secret: DISCORD_WEBHOOK_ID
-    webhook_token:
-      from_secret: DISCORD_WEBHOOK_TOKEN
-  when:
-    status: [success, failure]
-
----
-kind: pipeline
-type: docker
 name: production
 
 trigger:
@@ -206,7 +149,7 @@ trigger:
 
 steps:
 - name: Run migrations
-  image: mcr.microsoft.com/dotnet/sdk:5.0
+  image: mcr.microsoft.com/dotnet/sdk:5.0-focal
   environment:
     GITHUB_TOKEN:
       from_secret: GITHUB_TOKEN
@@ -216,8 +159,13 @@ steps:
       from_secret: VAULT_PROD_ENDPOINT
     JAEGER_AGENT_HOST: 'localhost'
     JAEGER_AGENT_PORT: '6831'
+    ASPNETCORE_ENVIRONMENT: 'Production'
     HTDC_TSUTSUJIGASAKI_SENTRY_ENDPOINT:
-      from_secret: SENTRY_PRODUCTION_ENDPOINT
+      from_secret: 
+    CONSUL_HTTP_ADDR:
+      from_secret: CONSUL_PROD_HTTP_ADDR        
+    CONSUL_HTTP_TOKEN:
+      from_secret: CONSUL_PROD_HTTP_TOKEN
   commands:
     - cd HappyTravel.Tsutsujigasaki.Api
     - dotnet tool restore
@@ -243,18 +191,21 @@ steps:
       from_secret: TRAVEL_DOCKER_LOGIN
     password:
       from_secret: TRAVEL_DOCKER_PASSWORD
+    CONSUL_HTTP_TOKEN:
+      from_secret: CONSUL_PROD_HTTP_TOKEN
     build_args_from_env:
       - GITHUB_TOKEN
       - VAULT_TOKEN
       - BUILD_VERSION
+      - CONSUL_HTTP_TOKEN
 
 - name: Deploy to production
   image: pelotech/drone-helm3:0.14.2
   settings:
     mode: upgrade
-    chart: ./Helm_v3/cc
+    chart: ./Helm/cc
     release: cc-production
-    values_files: ["Helm_v3/cc/values_prod.yaml"]
+    values_files: ["Helm/cc/values_prod.yaml"]
     namespace: production
     skip_tls_verify: true
     wait_for_upgrade: true

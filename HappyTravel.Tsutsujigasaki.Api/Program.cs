@@ -1,3 +1,5 @@
+using System;
+using HappyTravel.Diplomat.ConfigurationProvider.Extensions;
 using HappyTravel.Tsutsujigasaki.Api.Infrastructure.Constants;
 using HappyTravel.Tsutsujigasaki.Api.Infrastructure.Environments;
 using HappyTravel.StdOutLogger.Extensions;
@@ -25,9 +27,15 @@ namespace HappyTravel.Tsutsujigasaki.Api
                         .ConfigureAppConfiguration((context, builder) =>
                         {
                             var environment = context.HostingEnvironment;
+                            var environmentName = environment.EnvironmentName;
 
                             builder.AddJsonFile("appsettings.json", false, true)
-                                .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", true, true);
+                                .AddJsonFile($"appsettings.{environmentName}.json", true, true);
+                            builder.AddDiplomat(
+                                Environment.GetEnvironmentVariable("CONSUL_HTTP_ADDR"), 
+                                $"tsutsujigasaki/{environmentName}",
+                                Environment.GetEnvironmentVariable("CONSUL_HTTP_TOKEN")
+                            );
                             builder.AddEnvironmentVariables();
                         })
                         .ConfigureLogging((context, builder) =>

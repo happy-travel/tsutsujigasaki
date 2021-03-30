@@ -1,8 +1,0 @@
-root_url: happytravel.com
-registry: registry.dev.happytravel.com
-service:
-  name: tsutsujigasaki
-  port: 80
-  secretName: letsencrypt-tsutsujigasaki
-container:
-  port: 80
