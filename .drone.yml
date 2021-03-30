@@ -84,6 +84,8 @@ steps:
     VAULT_TOKEN:
       from_secret: VAULT_DEV_TOKEN
     BUILD_VERSION: ${DRONE_COMMIT_SHA:0:7}
+    CONSUL_HTTP_TOKEN:
+      from_secret: CONSUL_DEV_HTTP_TOKEN
   settings:
     registry: registry.happytravel.com
     repo: registry.happytravel.com/cc
@@ -95,9 +97,7 @@ steps:
     username:
       from_secret: TRAVEL_DOCKER_LOGIN
     password:
-      from_secret: TRAVEL_DOCKER_PASSWORD
-    CONSUL_HTTP_TOKEN:
-      from_secret: CONSUL_DEV_HTTP_TOKEN      
+      from_secret: TRAVEL_DOCKER_PASSWORD  
     build_args_from_env:
       - GITHUB_TOKEN
       - VAULT_TOKEN
@@ -179,6 +179,8 @@ steps:
     VAULT_TOKEN:
       from_secret: VAULT_PROD_TOKEN
     BUILD_VERSION: ${DRONE_COMMIT_SHA:0:7}
+    CONSUL_HTTP_TOKEN:
+      from_secret: CONSUL_PROD_HTTP_TOKEN    
   settings:
     registry: registry.happytravel.com
     repo: registry.happytravel.com/cc
@@ -191,8 +193,6 @@ steps:
       from_secret: TRAVEL_DOCKER_LOGIN
     password:
       from_secret: TRAVEL_DOCKER_PASSWORD
-    CONSUL_HTTP_TOKEN:
-      from_secret: CONSUL_PROD_HTTP_TOKEN
     build_args_from_env:
       - GITHUB_TOKEN
       - VAULT_TOKEN
