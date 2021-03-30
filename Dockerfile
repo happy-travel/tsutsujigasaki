@@ -1,18 +1,19 @@
 FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
 
 ARG VAULT_TOKEN
+ARG CONSUL_HTTP_TOKEN
+
+ENV CONSUL_HTTP_TOKEN=$CONSUL_HTTP_TOKEN
 ENV HTDC_VAULT_TOKEN=$VAULT_TOKEN
 
 WORKDIR /app
 EXPOSE 80
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0-focal AS build
 ARG GITHUB_TOKEN
 WORKDIR /src
 COPY . .
 RUN dotnet restore
-WORKDIR /src/HappyTravel.Tsutsujigasaki.UnitTests
-RUN dotnet test
 WORKDIR /src/HappyTravel.Tsutsujigasaki.Api
 RUN dotnet build -c Release -o /app
 

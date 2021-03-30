@@ -1,8 +1,8 @@
 replicaCount: 1
 
 jaeger:
-  sidecar: jaeger-production
-  collector_host: dns:///jaeger-production-collector-headless.observability:14250
+  sidecar: jaeger-dev
+  collector_host: dns:///jaeger-dev-collector-headless.observability:14250
 
 image:
   repository: registry.happytravel.com/cc
@@ -49,13 +49,13 @@ ingress:
     kubernetes.io/ingress.allow-http: "false"
     kubernetes.io/tls-acme: "true"
   hosts:
-    - host: cc.happytravel.com
+    - host: cc-dev.happytravel.com
       paths:
         - /
   tls:
    - secretName: happytravel-tls
      hosts:
-       - cc.happytravel.com
+       - cc-dev.happytravel.com
 
 resources:
   limits:
@@ -72,8 +72,9 @@ tolerations: []
 affinity: {}
 
 env:
-  ASPNETCORE_ENVIRONMENT: "Production"
-  HTDC_VAULT_ENDPOINT: "https://vault.happytravel.com/v1/"
+  ASPNETCORE_ENVIRONMENT: "Development"
+  HTDC_VAULT_ENDPOINT: "https://vault.dev.happytravel.com/v1/"
+  CONSUL_HTTP_ADDR: "https://consul-dev.happytravel.com/"
   HTDC_TSUTSUJIGASAKI_SENTRY_ENDPOINT: "https://df89400a0d23436dbd54be0167bb021c@sentry.dev.happytravel.com/18"
   HTDC_REDIS_HOST: "redis-tsutsujigasaki"
   JAEGER_AGENT_HOST: "localhost"
