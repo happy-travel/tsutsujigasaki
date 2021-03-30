@@ -19,8 +19,8 @@ steps:
       from_secret: VAULT_DEV_TOKEN
     HTDC_VAULT_ENDPOINT:
       from_secret: VAULT_DEV_ENDPOINT
-    CONSUL_HTTP_TOKEN:
-      from_secret: CONSUL_DEV_HTTP_TOKEN
+    CONSUL_HTTP_ADDR:
+      from_secret: CONSUL_DEV_HTTP_ADDR
     CONSUL_HTTP_TOKEN:
       from_secret: CONSUL_DEV_HTTP_TOKEN
   commands:
