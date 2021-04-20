@@ -59,11 +59,11 @@ steps:
     GITHUB_TOKEN:
       from_secret: GITHUB_TOKEN
     HTDC_VAULT_TOKEN:
-      from_secret: VAULT_DEV_TOKEN      
+      from_secret: VAULT_DEV_TOKEN
     HTDC_VAULT_ENDPOINT:
       from_secret: VAULT_DEV_ENDPOINT
     CONSUL_HTTP_ADDR:
-      from_secret: CONSUL_DEV_HTTP_ADDR   
+      from_secret: CONSUL_DEV_HTTP_ADDR
     CONSUL_HTTP_TOKEN:
       from_secret: CONSUL_DEV_HTTP_TOKEN
     JAEGER_AGENT_HOST: 'localhost'
@@ -97,7 +97,7 @@ steps:
     username:
       from_secret: TRAVEL_DOCKER_LOGIN
     password:
-      from_secret: TRAVEL_DOCKER_PASSWORD  
+      from_secret: TRAVEL_DOCKER_PASSWORD
     build_args_from_env:
       - GITHUB_TOKEN
       - VAULT_TOKEN
@@ -145,7 +145,7 @@ trigger:
   event:
     - promote
   target:
-    - production    
+    - production
 
 steps:
 - name: Run migrations
@@ -154,23 +154,23 @@ steps:
     GITHUB_TOKEN:
       from_secret: GITHUB_TOKEN
     HTDC_VAULT_TOKEN:
-      from_secret: VAULT_PROD_TOKEN      
+      from_secret: VAULT_PROD_TOKEN
     HTDC_VAULT_ENDPOINT:
       from_secret: VAULT_PROD_ENDPOINT
     JAEGER_AGENT_HOST: 'localhost'
     JAEGER_AGENT_PORT: '6831'
     ASPNETCORE_ENVIRONMENT: 'Production'
     HTDC_TSUTSUJIGASAKI_SENTRY_ENDPOINT:
-      from_secret: 
+      from_secret:
     CONSUL_HTTP_ADDR:
-      from_secret: CONSUL_PROD_HTTP_ADDR        
+      from_secret: CONSUL_PROD_HTTP_ADDR
     CONSUL_HTTP_TOKEN:
       from_secret: CONSUL_PROD_HTTP_TOKEN
   commands:
     - cd HappyTravel.Tsutsujigasaki.Api
     - dotnet tool restore
     - dotnet ef database update
-  
+
 - name: Build docker image & push to repository
   image: plugins/docker
   environment:
@@ -180,7 +180,7 @@ steps:
       from_secret: VAULT_PROD_TOKEN
     BUILD_VERSION: ${DRONE_COMMIT_SHA:0:7}
     CONSUL_HTTP_TOKEN:
-      from_secret: CONSUL_PROD_HTTP_TOKEN    
+      from_secret: CONSUL_PROD_HTTP_TOKEN
   settings:
     registry: registry.happytravel.com
     repo: registry.happytravel.com/cc
