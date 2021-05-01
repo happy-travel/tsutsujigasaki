@@ -162,8 +162,6 @@ namespace HappyTravel.Tsutsujigasaki.Api.Services
                 ratesToStore.Add(new CurrencyRate
                 {
                     Rate = rate,
-                    // TODO: Recheck if this is needed
-                    RateCorrection = 0,
                     Source = source,
                     Target = target,
                     ValidFrom = now
@@ -204,6 +202,7 @@ namespace HappyTravel.Tsutsujigasaki.Api.Services
                 return result;
             
             // TODO: Fast tests hotfix. Remove after tests will be rewritten
+            // https://github.com/happy-travel/agent-app-project/issues/177
             if (_context is null)
                 return null;
             

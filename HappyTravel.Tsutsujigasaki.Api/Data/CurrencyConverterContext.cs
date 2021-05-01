@@ -21,9 +21,7 @@ namespace HappyTravel.Tsutsujigasaki.Api.Data
                 rate.Property(r => r.Rate)
                     .HasColumnType("numeric")
                     .IsRequired();
-                rate.Property(r => r.RateCorrection)
-                    .HasColumnType("numeric")
-                    .IsRequired();
+               
                 rate.Property(r => r.Source).IsRequired();
                 rate.Property(r => r.Target).IsRequired();
                 rate.Property(r => r.ValidFrom)
