@@ -373,13 +373,9 @@ namespace HappyTravel.Tsutsujigasaki.UnitTests
             var service = new RateService(new NullLoggerFactory(), GetCache(), GetHttpClientFactory(), _options,
                 contextMock.Object);
             var (isSuccess, _, returnedValue) = await service.Get(Currencies.USD, Currencies.AED);
-            var lastLoggedRate = contextMock.Object.CurrencyRates.ToList()
-                .Where(r => r.Source == "USD" && r.Target == "AED")
-                .OrderByDescending(r => r.ValidFrom).First();
 
             Assert.True(isSuccess);
             Assert.Equal(defaultRate, returnedValue);
-            Assert.Equal(lastLoggedRate.RateCorrection, correction);
         }
 
 
