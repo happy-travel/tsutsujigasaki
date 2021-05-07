@@ -161,7 +161,7 @@ steps:
     JAEGER_AGENT_PORT: '6831'
     ASPNETCORE_ENVIRONMENT: 'Production'
     HTDC_TSUTSUJIGASAKI_SENTRY_ENDPOINT:
-      from_secret:
+      from_secret: SENTRY_ENDPOINT
     CONSUL_HTTP_ADDR:
       from_secret: CONSUL_PROD_HTTP_ADDR
     CONSUL_HTTP_TOKEN:
