@@ -1,4 +1,5 @@
 using System;
+using HappyTravel.ConsulKeyValueClient.ConfigurationProvider.Extensions;
 using HappyTravel.Diplomat.ConfigurationProvider.Extensions;
 using HappyTravel.Tsutsujigasaki.Api.Infrastructure.Constants;
 using HappyTravel.Tsutsujigasaki.Api.Infrastructure.Environments;
@@ -31,12 +32,10 @@ namespace HappyTravel.Tsutsujigasaki.Api
 
                             builder.AddJsonFile("appsettings.json", false, true)
                                 .AddJsonFile($"appsettings.{environmentName}.json", true, true);
-                            builder.AddDiplomat(
-                                Environment.GetEnvironmentVariable("CONSUL_HTTP_ADDR"), 
-                                $"tsutsujigasaki/{environmentName}",
-                                Environment.GetEnvironmentVariable("CONSUL_HTTP_TOKEN")
-                            );
                             builder.AddEnvironmentVariables();
+                            builder.AddConsulKeyValueClient(Environment.GetEnvironmentVariable("CONSUL_HTTP_ADDR") ?? throw new InvalidOperationException("Consul endpoint is not set"),
+                                "tsutsujigasaki",
+                                Environment.GetEnvironmentVariable("CONSUL_HTTP_TOKEN") ?? throw new InvalidOperationException("Consul http token is not set"));
                         })
                         .ConfigureLogging((context, builder) =>
                         {
@@ -52,7 +51,7 @@ namespace HappyTravel.Tsutsujigasaki.Api
                             {
                                 builder.AddStdOutLogger(setup =>
                                 {
-                                    setup.IncludeScopes = false;
+                                    setup.IncludeScopes = true;
                                     setup.RequestIdHeader = Common.RequestIdHeader;
                                     setup.UseUtcTimestamp = true;
                                 });
