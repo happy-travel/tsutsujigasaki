@@ -46,12 +46,19 @@ namespace HappyTravel.Tsutsujigasaki.Api.Services
             if (sourceCurrency == targetCurrency)
                 return Result.Success<decimal, ProblemDetails>(1);
 
+            return await GetDefaultRate(sourceCurrency.ToString(), targetCurrency.ToString())
+                   ?? await GetRateFromApi(sourceCurrency, targetCurrency);
+        }
+
+        
+        private async Task<Result<decimal, ProblemDetails>> GetRateFromApi(Currencies sourceCurrency, Currencies targetCurrency)
+        {
             var cacheKey = _cache.BuildKey(nameof(RateService), nameof(Get), sourceCurrency.ToString(),
                 targetCurrency.ToString());
             if (_cache.TryGetValue(cacheKey, out Result<decimal, ProblemDetails> result, GetTimeSpanToNextHour()))
                 return result;
 
-            result = await GetRates(sourceCurrency)
+            result = await FetchRatesFromApi(sourceCurrency)
                 .Bind(SplitCurrencyPair)
                 .Bind(SetRates)
                 .Bind(rates => GetRate(rates, sourceCurrency, targetCurrency));
@@ -66,17 +73,13 @@ namespace HappyTravel.Tsutsujigasaki.Api.Services
         private async Task<Result<decimal, ProblemDetails>> GetRate(Dictionary<(string, string), decimal> rates,
             Currencies sourceCurrency, Currencies targetCurrency)
         {
-            var defaultRate = await GetDefaultRate(sourceCurrency.ToString(), targetCurrency.ToString());
-            if (defaultRate.HasValue)
-                return defaultRate.Value;
-
             if (rates.TryGetValue((sourceCurrency.ToString(), targetCurrency.ToString()), out var rate))
                 return Result.Success<decimal, ProblemDetails>(rate);
 
             var today = DateTime.Today;
             var storedRate = await _context.CurrencyRates
                 .Where(r => r.Source == sourceCurrency.ToString() && r.Target == targetCurrency.ToString())
-                //TODO Clarify this condition
+                // TODO Clarify this condition
                 .Where(r => today <= r.ValidFrom)
                 .OrderByDescending(r => r.ValidFrom)
                 .Select(r => r.Rate)
@@ -89,7 +92,7 @@ namespace HappyTravel.Tsutsujigasaki.Api.Services
         }
 
 
-        private async Task<Result<Dictionary<string, decimal>, ProblemDetails>> GetRates(Currencies sourceCurrency)
+        private async Task<Result<Dictionary<string, decimal>, ProblemDetails>> FetchRatesFromApi(Currencies sourceCurrency)
         {
             var url = $"live?access_key={_options.ApiKey}&source={sourceCurrency}&currencies={GetSupportedCurrenciesString(sourceCurrency)}";
             try
@@ -156,12 +159,9 @@ namespace HappyTravel.Tsutsujigasaki.Api.Services
             var ratesToStore = new List<CurrencyRate>(rates.Count);
             foreach (var ((source, target), rate) in rates)
             {
-                var defaultRate = await GetDefaultRate(source, target);
-
                 ratesToStore.Add(new CurrencyRate
                 {
-                    Rate = defaultRate ?? rate,
-                    RateCorrection = rate - defaultRate ?? 0,
+                    Rate = rate,
                     Source = source,
                     Target = target,
                     ValidFrom = now
@@ -201,6 +201,11 @@ namespace HappyTravel.Tsutsujigasaki.Api.Services
             if (_cache.TryGetValue(cacheKey, out decimal result, GetTimeSpanToNextMinute()))
                 return result;
             
+            // TODO: Fast tests hotfix. Remove after tests will be rewritten
+            // https://github.com/happy-travel/agent-app-project/issues/177
+            if (_context is null)
+                return null;
+            
             var storedDefaultRate = await _context.DefaultCurrencyRates
                 .Where(r => r.Source.Equals(source) && r.Target.Equals(target))
                 .OrderByDescending(r => r.ValidFrom)
@@ -217,7 +222,6 @@ namespace HappyTravel.Tsutsujigasaki.Api.Services
 
         private const int SymbolLength = 3;
 
-        private static Dictionary<(string, string), decimal>? _defaultRates;
         private readonly IDoubleFlow _cache;
         private readonly IHttpClientFactory _clientFactory;
         private readonly CurrencyConverterContext _context;
