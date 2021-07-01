@@ -71,7 +71,7 @@ env:
   ASPNETCORE_ENVIRONMENT: "Production"
   HTDC_VAULT_ENDPOINT: "https://vault.happytravel.com/v1/"
   CONSUL_HTTP_ADDR: "https://consul.happytravel.com/"
-  HTDC_TSUTSUJIGASAKI_SENTRY_ENDPOINT: "https://df89400a0d23436dbd54be0167bb021c@sentry.happytravel.com/18"
+  HTDC_TSUTSUJIGASAKI_SENTRY_ENDPOINT: "https://df89400a0d23436dbd54be0167bb021c@sentry1.happytravel.com/18"
   HTDC_REDIS_HOST: "redis-tsutsujigasaki"
   JAEGER_AGENT_HOST: "localhost"
   JAEGER_AGENT_PORT: "6831"
