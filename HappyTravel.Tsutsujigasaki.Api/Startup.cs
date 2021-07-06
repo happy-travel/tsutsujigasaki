@@ -111,8 +111,6 @@ namespace HappyTravel.Tsutsujigasaki.Api
                 options.JaegerPort = _environment.IsLocal()
                     ? Configuration.GetValue<int>("Jaeger:AgentPort")
                     : Configuration.GetValue<int>(Configuration.GetValue<string>("Jaeger:AgentPort"));
-                options.RedisEndpoint =
-                    Configuration.GetValue<string>(Configuration.GetValue<string>("Redis:Endpoint"));
             });
 
             services.AddSwaggerGen(options =>
