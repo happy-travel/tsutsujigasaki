@@ -16,6 +16,7 @@ using HappyTravel.Tsutsujigasaki.Api.Infrastructure.Environments;
 using HappyTravel.Tsutsujigasaki.Api.Services;
 using HappyTravel.ErrorHandling.Extensions;
 using HappyTravel.Money.Enums;
+using HappyTravel.Telemetry.Extensions;
 using HappyTravel.VaultClient;
 using MessagePack;
 using MessagePack.CSharpFunctionalExtensions;
@@ -101,7 +102,16 @@ namespace HappyTravel.Tsutsujigasaki.Api
             var bufferPairs = Configuration.GetSection("BufferPairs").Get<List<BufferPair>>();
             services.AddCurrencyConversionFactory(bufferPairs);
 
-            services = AddTracing(services, _environment, Configuration);
+            services.AddTracing(Configuration, options =>
+            {
+                options.ServiceName = $"{_environment.ApplicationName}-{_environment.EnvironmentName}";
+                options.JaegerHost = _environment.IsLocal()
+                    ? Configuration.GetValue<string>("Jaeger:AgentHost")
+                    : Configuration.GetValue<string>(Configuration.GetValue<string>("Jaeger:AgentHost"));
+                options.JaegerPort = _environment.IsLocal()
+                    ? Configuration.GetValue<int>("Jaeger:AgentPort")
+                    : Configuration.GetValue<int>(Configuration.GetValue<string>("Jaeger:AgentPort"));
+            });
 
             services.AddSwaggerGen(options =>
             {
@@ -160,30 +170,6 @@ namespace HappyTravel.Tsutsujigasaki.Api
                 options.EnableSensitiveDataLogging(false);
                 options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             }, 16);
-        }
-
-
-        private static IServiceCollection AddTracing(IServiceCollection services, IWebHostEnvironment environment, IConfiguration configuration)
-        {
-            var agentHost = configuration["Jaeger:AgentHost"];
-            var agentPort = int.Parse(configuration["Jaeger:AgentPort"]);
-
-            var serviceName = $"{environment.ApplicationName}-{environment.EnvironmentName}";
-            services.AddOpenTelemetryTracing(builder =>
-            {
-                builder
-                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName))
-                    .SetSampler(new AlwaysOnSampler())
-                    .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
-                    .AddJaegerExporter(options =>
-                    {
-                        options.AgentHost = agentHost;
-                        options.AgentPort = agentPort;
-                    });
-            });
-
-            return services;
         }
 
 
