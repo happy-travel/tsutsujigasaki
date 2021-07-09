@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using HappyTravel.ConsulKeyValueClient.ConfigurationProvider.Extensions;
 using HappyTravel.Diplomat.ConfigurationProvider.Extensions;
 using HappyTravel.Tsutsujigasaki.Api.Infrastructure.Constants;
@@ -25,6 +26,22 @@ namespace HappyTravel.Tsutsujigasaki.Api
                 {
                     webBuilder.UseKestrel()
                         .UseStartup<Startup>()
+                        .UseSentry(options =>
+                        {
+                            options.Dsn = Environment.GetEnvironmentVariable("HTDC_TSUTSUJIGASAKI_SENTRY_ENDPOINT");
+                            options.Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+                            options.IncludeActivityData = true;
+                            options.BeforeSend = sentryEvent =>
+                            {
+                                foreach (var (key, value) in OpenTelemetry.Baggage.Current)
+                                    sentryEvent.SetTag(key, value);
+                                    
+                                sentryEvent.SetTag("TraceId", Activity.Current?.TraceId.ToString() ?? string.Empty);
+                                sentryEvent.SetTag("SpanId", Activity.Current?.SpanId.ToString() ?? string.Empty);
+
+                                return sentryEvent;
+                            };
+                        })
                         .ConfigureAppConfiguration((context, builder) =>
                         {
                             var environment = context.HostingEnvironment;
@@ -55,11 +72,7 @@ namespace HappyTravel.Tsutsujigasaki.Api
                                     setup.RequestIdHeader = Common.RequestIdHeader;
                                     setup.UseUtcTimestamp = true;
                                 });
-                                builder.AddSentry(c =>
-                                {
-                                    c.Dsn = EnvironmentVariableHelper.Get("Logging:Sentry:Endpoint", context.Configuration);
-                                    c.Environment = env.EnvironmentName;
-                                });
+                                builder.AddSentry();
                             }
                         });
                 });
